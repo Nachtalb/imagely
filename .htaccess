@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteBase /
+
+# Redirect all requests to non-existing files to imagely,
+# except for media resources
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !.*\.(gif|jpg|png|bmp|js|css|woff|ttf|svg)$
+RewriteRule . index.php?__cap=%{REQUEST_URI} [L,QSA]
+
+# Add captured request to index files
+RewriteRule ^index.php index.php?__cap=%{REQUEST_URI} [L,QSA]

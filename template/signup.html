@@ -1,0 +1,49 @@
+<!-- Page Header -->
+<header class="intro-header" style="background-image: url('{PATH_OFFSET}/data/media/content/admin-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="site-heading">
+                    <h1>{TXT_IMAGELY_SIGNUP_HEADING}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Imports for create -->
+<script type="text/javascript" src="{PATH_OFFSET}/template/js/signup.js"></script>
+<div class="container">
+    <div id="status"></div>
+    <form action="{PATH_OFFSET}/{LANGUAGE}/DoSignup" method="post" class="form-horizontal" id="registration">
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{TXT_IMAGELY_SIGNUP_USERNAME}</label>
+
+            <div class="col-sm-9">
+                <input type="email" tabindex="1" class="form-control" name="Username" value="{TXT_SIGNUP_USERNAME}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{TXT_IMAGELY_SIGNUP_PASSWORD}</label>
+
+            <div class="col-sm-9">
+                <input type="password" tabindex="2" class="form-control" name="Password">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">{TXT_IMAGELY_SIGNUP_PASSWORD_REPEAT}</label>
+
+            <div class="col-sm-9">
+                <input type="password" tabindex="3" class="form-control" name="PasswordRepeat">
+            </div>
+        </div>
+    </form>
+    <p>{TXT_IMAGELY_SIGNUP_ALREADY_ACCOUNT} <a tabindex="4" href="Login">{TXT_IMAGELY_SIGNUP_LOGIN_NOW}</a></p>
+
+    <div class="form-group">
+        <button class="btn btn-default" tabindex="5" id="submit" value="senden">{TXT_IMAGELY_SIGNUP_FORM_SUBMIT}
+        </button>
+        <button class="btn btn-default" tabindex="6" id="reset" type="reset" form="registration" value="reset">
+            {TXT_IMAGELY_SIGNUP_FORM_RESET}
+        </button>
+    </div>
+</div>
