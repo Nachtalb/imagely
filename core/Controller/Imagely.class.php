@@ -90,7 +90,7 @@ class Imagely
         $urlParts = explode('/', $_GET['__cap']);
 
         //Set requestedLanguage
-        if (!isset($urlParts[1]) || $urlParts[1] === 'index.php' || $urlParts[1] === '' || !in_array($urlParts[1], $availableLanguages, TRUE))
+        if (!isset($urlParts[1]) || $urlParts[1] == 'index.php' || $urlParts[1] == '' || !in_array($urlParts[1], $availableLanguages, TRUE))
             $this->redirectTo($availableTemplates[0], NULL);
         else
             $requestedLanguage = $urlParts[1];
@@ -444,7 +444,7 @@ class Imagely
     function redirectTo($site, $lang)
     {
         $availableTemplates = $this->template->getAvailableTemplates();
-        $availableLanguages = $this->template->getAvailableTemplates();
+        $availableLanguages = $this->language->getAvailableLanguages();
         if (isset($lang) && $lang != NULL && in_array($lang, $availableLanguages, TRUE)) {
             if (in_array($site, $availableTemplates, TRUE))
                 $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $lang . '/' . $site;
