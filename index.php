@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @copyright   Nick Espig <nicku8.com>
- * @author      Nick Espig <info@nicku8.com>
+ * @copyright   Nick Espig <nickespig.xyz>
+ * @author      Nick Espig <info@nickespig.xyz>
  * @package     imagely
  * @version     1.0
  */

@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @copyright   Nick Espig <nicku8.com>
- * @author      Nick Espig <info@nicku8.com>
+ * @copyright   Nick Espig <nickespig.xyz>
+ * @author      Nick Espig <info@nickespig.xyz>
  * @package     imagely
  * @version     1.0
  * @subpackage  core
@@ -10,10 +10,12 @@
 class User
 {
 
-    /** Get All users from database
+    /**
+     * Get All users from database
      *
-     * @return array : array with all users
-     * @throws Exception
+     * @return array - Array of all Users with the following data: id, name, password as php password hash and 1 or 0
+     *               as isAdmin
+     * @throws Exception - If SQL statement isn't working
      */
     function getAll()
     {
@@ -32,10 +34,10 @@ class User
     }
 
     /**
-     * get all user id's
+     * Get ID's of all users
      *
-     * @return array : array with all user id's
-     * @throws Exception
+     * @return array - Array with all user ID's
+     * @throws Exception - If SQL statement isn't working
      */
     function getAvailableUsersId()
     {
@@ -53,17 +55,18 @@ class User
     }
 
     /**
-     * get User by id
+     * Get User by ID
      *
-     * @param int $id : Id of the user
+     * @param int $userID - ID of the specific user
      *
-     * @return array : full array from this specific user
-     * @throws Exception
+     * @return array - Full array from this specific user, with the following data: id, name, password as php password
+     *               hash and 1 or as isAdmin
+     * @throws Exception - If SQL statement isn't working
      */
-    function getUserById($id)
+    function getUserById($userID)
     {
         try {
-            $returned_set = $GLOBALS['db']->query('SELECT * FROM user WHERE id=' . $id);
+            $returned_set = $GLOBALS['db']->query('SELECT * FROM user WHERE id=' . $userID);
             $return       = $returned_set->fetch_array();
 
             return $return;
@@ -74,17 +77,17 @@ class User
     }
 
     /**
-     * get Username by user id
+     * Get Username by user ID
      *
-     * @param int $id : user id
+     * @param int $userID - User ID
      *
-     * @return String : Username
-     * @throws Exception
+     * @return String - Username
+     * @throws Exception - If SQL statement isn't working
      */
-    function getNameById($id)
+    function getNameById($userID)
     {
         try {
-            $returned_set = $GLOBALS['db']->query('SELECT name FROM user WHERE id=' . $id);
+            $returned_set = $GLOBALS['db']->query('SELECT name FROM user WHERE id=' . $userID);
             $result       = $returned_set->fetch_array();
 
             return $result['name'];
@@ -95,17 +98,17 @@ class User
     }
 
     /**
-     * Get user id by username
+     * Get user ID by username
      *
-     * @param String $name : username
+     * @param String $username - Username
      *
-     * @return string user id
-     * @throws Exception
+     * @return string - userID
+     * @throws Exception - If SQL statement isn't working
      */
-    function getIdByName($name)
+    function getIdByName($username)
     {
         try {
-            $returned_set = $GLOBALS['db']->query('SELECT id FROM user WHERE name=' . $name);
+            $returned_set = $GLOBALS['db']->query('SELECT id FROM user WHERE name=' . $username);
             $result       = $returned_set->fetch_array();
 
             return ($result !== NULL) ? (int)$result['id'] : FALSE;
@@ -116,18 +119,18 @@ class User
     }
 
     /**
-     * creates a user
+     * Creates a user
      *
-     * @param array $request : array with the values username and password
+     * @param array $data - Array with the values username and password
      *
-     * @throws Exception
+     * @throws Exception - If SQL statement isn't working
      */
-    function createUser($request)
+    function createUser($data)
     {
         try {
 
-            $name     = $request['username'];
-            $password = password_hash($request['password'], PASSWORD_DEFAULT);
+            $name     = $data['username'];
+            $password = password_hash($data['password'], PASSWORD_DEFAULT);
             //fixme: something is not right here
             $query = $GLOBALS['db']->query('INSERT INTO user (name, password) VALUES (\'' . $name . '\', \'' . $password . '\')');
             $query::execute();
@@ -138,20 +141,28 @@ class User
     }
 
     /**
-     * updates an existing user
+     * Updates an existing user
      *
-     * @param array $data : array with the new password
+     * @param int    $userID   - Useres ID
+     * @param string $password - Password
+     * @param mixed  $isAdmin  - Can be boolean or integer
      *
-     * @throws Exception
+     * @throws Exception - If SQL statement isn't working
+     *
      */
-    function editUserById($data)
+    function editUserById($userID, $password, $isAdmin)
     {
-        //todo : make this work
         try {
-            $password = password_hash($data['password'], PASSWORD_DEFAULT);
-            $isAdmin  = 0;
-            $query    = $GLOBALS['db']->query('UPDATE user SET (password=\'' . $password . '\', isAdmin=\'' . $isAdmin . '\') WHERE ');
-            $query::execute();
+            $password = password_hash($password, PASSWORD_DEFAULT);
+            if (isset($isAdmin)) {
+                $isAdmin = ($isAdmin === TRUE || $isAdmin === 1 || $isAdmin === '1') ? 1 : 0;
+                $query   = $GLOBALS['db']->query('UPDATE user SET password=\'' . $password . '\', isAdmin=\'' . $isAdmin . '\' WHERE id=' . $userID);
+
+            } else {
+                $query = $GLOBALS['db']->query('UPDATE user SET password=\'' . $password . '\' WHERE id=' . $userID);
+
+            }
+            $query->execute();
 
         } catch (\Exception $e) {
             throw new Exception("Error  : " . $e->getMessage());
@@ -159,17 +170,17 @@ class User
     }
 
     /**
-     * get the password hash from a user
+     * Get the password hash from a user
      *
-     * @param int $id : id of the specific user
+     * @param int $userID - ID of the specific user
      *
-     * @return String : the password hash as string
-     * @throws Exception
+     * @return String - The password hash as string
+     * @throws Exception - If SQL statement isn't working
      */
-    function getHashById($id)
+    function getHashById($userID)
     {
         try {
-            $returned_set = $GLOBALS['db']->query('SELECT password FROM user WHERE id=' . $id);
+            $returned_set = $GLOBALS['db']->query('SELECT password FROM user WHERE id=' . $userID);
             $result       = $returned_set->fetch_array();
 
             return $result['password'];
@@ -180,17 +191,17 @@ class User
     }
 
     /**
-     * deletes a user by it's id
+     * Deletes a user by it's id
      *
-     * @param int $id : user id
+     * @param int $userId - UserID
      *
-     * @throws Exception
+     * @throws Exception - If SQL statement isn't working
      */
-    function deleteUserById($id)
+    function deleteUserById($userId)
     {
         try {
-            Gallery::deleteGalleryByUser($id);
-            $query = $GLOBALS['db']->query('DELETE FROM user WHERE id=' . $id);
+            Gallery::deleteGalleryByUser($userId);
+            $query = $GLOBALS['db']->query('DELETE FROM user WHERE id=' . $userId);
             $query::execute();
         } catch (\Exception $e) {
             throw new Exception("Error  : " . $e->getMessage());
@@ -198,29 +209,31 @@ class User
     }
 
     /**
+     * Check if given user id matches with the given id or if the user is an admin, otherwise it will forward the user
+     * to the given url
      *
-     * @param $userId
-     * @param $id
-     * @param $redirect
+     * @param int $userID - The users ID
+     * @param int $id - ID you want to compare
+     * @param int $redirectURL - URL to redirect to
      *
      * @return bool
      */
-    function checkIfOwnAccountRedirect($userId, $id, $redirect)
+    function checkIfOwnAccountOrRedirect($userId, $id, $redirectURL)
     {
         if ($id === $_SESSION['userId'] || User::isAdmin($userId) === 1) {
             return TRUE;
         }
-        header($redirect);
+        header($redirectURL);
 
         return FALSE;
     }
 
     /**
-     * checks if user is admin
+     * Checks if user is an admin
      *
-     * @param int $id : user id
+     * @param int $id - UserID
      *
-     * @return boolean : returns true or false if the user is admin or not
+     * @return boolean - If he is an admin as boolean
      */
     function isAdmin($id)
     {

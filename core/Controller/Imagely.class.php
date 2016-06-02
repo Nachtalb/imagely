@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @copyright   Nick Espig <nicku8.com>
- * @author      Nick Espig <info@nicku8.com>
+ * @copyright   Nick Espig <nickespig.xyz>
+ * @author      Nick Espig <info@nickespig.xyz>
  * @package     Imagely
  * @version     1.0
  * @subpackage  core
@@ -10,6 +10,11 @@
 class Imagely
 {
 
+    /**
+     * ArrayList with all possible actions
+     *
+     * @var array
+     */
     private $availableActions = [
         'DoLogin',
         'DoSignup',
@@ -20,14 +25,40 @@ class Imagely
         'DoEditGallery',
 
     ];
+    /**
+     * Language object
+     *
+     * @var Language
+     */
     private $language;
+    /**
+     * Template Object
+     *
+     * @var Template
+     */
     private $template;
+    /**
+     * Gallery Object
+     *
+     * @var Gallery
+     */
     private $gallery;
+    /**
+     * Image Object
+     *
+     * @var Image
+     */
     private $image;
+    /**
+     * User Object
+     *
+     * @var User
+     */
     private $user;
 
     /**
      * Imagely constructor.
+     * Starts session and loads all needed classes
      */
     function __construct()
     {
@@ -53,9 +84,9 @@ class Imagely
     }
 
     /**
-     * checks if user exists in session, to make sure that the user is logged in
+     * Checks if user exists in session, to make sure that the user is logged in
      *
-     * @return bool : if he's logged in
+     * @return bool - If he's logged in
      */
     function checkSession()
     {
@@ -74,7 +105,7 @@ class Imagely
     }
 
     /**
-     * controls the whole process from get link to show the site
+     * Controls the whole process from get link to show the site
      */
     function getPage()
     {
@@ -84,7 +115,7 @@ class Imagely
         $availableLanguages = $this->language->getAvailableLanguages();
 
         //getAvailableTemplates
-        $availableTemplates = $this->template->getAvailableTemplates();
+        $availableTemplates = $this->template->getAvailableSites();
 
         //Get requestedLanguage & requestedTemplate
         $urlParts = explode('/', $_GET['__cap']);
@@ -148,7 +179,7 @@ class Imagely
                     $entry   = str_replace('{GALLERY_LINK_HREF}', 'Detail/' . $value['id'], $entry);
                     $entry   = str_replace('{TXT_GALLERY_NAME}', $value['name'], $entry);
                     $entry   = str_replace('{TXT_GALLERY_DESCRIPTION}', $value['description'], $entry);
-                    $entry   = str_replace('{TXT_GALLERY_AUTHOR}', $this->gallery->getAuthorNameById($value['author']), $entry);
+                    $entry   = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById($value['author']), $entry);
                     $entry   = str_replace('{TXT_GALLERY_DATE}', $value['creationDate'], $entry);
                     $content = $content . $entry;
                 }
@@ -256,7 +287,7 @@ class Imagely
                 $galleryArr = $this->gallery->getGalleryById($requestedParameter);
                 $images     = $this->gallery->getImageByGalleryId($requestedParameter);
 
-                $page = str_replace('{TXT_GALLERY_AUTHOR}', $this->gallery->getAuthorNameById($galleryArr['author']), $page);
+                $page = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById(galleryArr['author']), $page);
                 $page = str_replace('{TXT_GALLERY_DATE}', $galleryArr['creationDate'], $page);
                 $page = str_replace('{TXT_GALLERY_NAME}', $galleryArr['name'], $page);
                 $page = str_replace('{TXT_GALLERY_DESCRIPTION}', $galleryArr['description'], $page);
@@ -289,7 +320,7 @@ class Imagely
                     $storeFolder   = '/data/media/gallery/';
                     $existingFiles = scandir($storeFolder, 1);
                     do {
-                        $randomString = $this->image->generateRandomString();
+                        $randomString = uniqid();
                     } while (in_array($randomString, $existingFiles, FALSE));
 
                     $targetFile = DOCUMENT_ROOT . $storeFolder . $randomString . '.' . $fileExt;
@@ -300,32 +331,32 @@ class Imagely
 
                     $request['imagePath']     = $storeFolder . $randomString . '.' . $fileExt;
                     $request['thumbnailPath'] = $storeFolder . $randomString . '.' . $fileExt . '.thumbnail';
+                    $this->image->referImageInDB($request);
                 }
-                $this->image->createImage($request);
                 header('Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[15] . '/' . $requestedParameter);
                 break;
             case 'DoDeleteAccount':
                 Imagely::checkSessionRedirect($defaultSite);
-                $this->user->checkIfOwnAccountRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
+                $this->user->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $this->user->deleteUserById($requestedParameter);
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
                 break;
             case 'DoEditAccount':
                 //todo: make this work
                 Imagely::checkSessionRedirect($defaultSite);
-                $this->user->checkIfOwnAccountRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
+                $this->user->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $this->user->deleteUserById($requestedParameter);
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
                 break;
             case 'DoDeleteGallery':
                 Imagely::checkSessionRedirect($defaultSite);
-                $this->gallery->checkIfOwnGalleryRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
+                $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $this->gallery->deleteGalleryById($requestedParameter);
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
                 break;
             case 'DoEditGallery':
                 Imagely::checkSessionRedirect($defaultSite);
-                $this->gallery->checkIfOwnGalleryRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
+                $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 if (isset($_POST)) {
                     $request                 = [];
                     $request['id']           = $requestedParameter;
@@ -341,7 +372,7 @@ class Imagely
                 break;
             case 'Edit':
                 Imagely::checkSessionRedirect($defaultSite);
-                $this->gallery->checkIfOwnGalleryRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
+                $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $entry = $this->gallery->getGalleryById($requestedParameter);
                 $page  = str_replace('{TXT_EDIT_ID}', $entry['id'], $page);
                 $page  = str_replace('{TXT_EDIT_NAME}', $entry['name'], $page);
@@ -393,11 +424,11 @@ class Imagely
     }
 
     /**
-     * check if user is logged in and returns true otherwise it redirects the client to the redirect page
+     * Check if user is logged in and returns true otherwise it redirects the client to the redirect page
      *
-     * @param string $redirect : page to redirect to
+     * @param string $redirect - Page to redirect to
      *
-     * @return bool : true if user is logged in
+     * @return bool - True if user is logged in
      */
     function checkSessionRedirect($redirect)
     {
@@ -415,11 +446,11 @@ class Imagely
     }
 
     /**
-     * checks if the logged in user is an admin, and if yes it returns true otherwise it redirects the client to the redirect page
+     * Checks if the logged in user is an admin, and if yes it returns true otherwise it redirects the client to the redirect page
      *
-     * @param string $redirect : page to redirect to
+     * @param string $redirect - Page to redirect to
      *
-     * @return bool : returns true if logged in
+     * @return bool - Returns true if logged in
      */
     function checkAdminRedirect($redirect)
     {
@@ -436,14 +467,14 @@ class Imagely
     }
 
     /**
-     * redirect to a certain site
+     * Redirect to a certain site
      *
-     * @param string $site : site you want to redirect to
-     * @param string $lang : language as string
+     * @param string $site - Site you want to redirect to
+     * @param string $lang - Language as string
      */
     function redirectTo($site, $lang)
     {
-        $availableTemplates = $this->template->getAvailableTemplates();
+        $availableTemplates = $this->template->getAvailableSites();
         $availableLanguages = $this->language->getAvailableLanguages();
         if (isset($lang) && $lang != NULL && in_array($lang, $availableLanguages, TRUE)) {
             if (in_array($site, $availableTemplates, TRUE))

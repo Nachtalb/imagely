@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @copyright   Nick Espig <nicku8.com>
- * @author      Nick Espig <info@nicku8.com>
+ * @copyright   Nick Espig <nickespig.xyz>
+ * @author      Nick Espig <info@nickespig.xyz>
  * @package     imagely
  * @version     1.0
  * @subpackage  core
@@ -10,11 +10,11 @@
 class Template
 {
     /**
-     * get all available sites/templates
+     * Get all available sites/templates
      *
-     * @return array
+     * @return array - Array with all available sites
      */
-    function getAvailableTemplates()
+    function getAvailableSites()
     {
         $availableTemplates = [
             'Home',
@@ -56,11 +56,11 @@ class Template
 
 
     /**
-     * generates the html of the whole site
+     * Generates the HTML of the whole site
      *
-     * @param string $pageName : name of the site you want to get
+     * @param string $pageName - Name of the site you want to get
      *
-     * @return string : html string
+     * @return string - HTML string
      */
     function getTemplate($pageName)
     {
@@ -123,9 +123,9 @@ class Template
     }
 
     /**
-     * builds the navigation html
+     * Builds the navigation HTML
      *
-     * @return string : returns the html of the navigation
+     * @return string - Returns the HTML of the navigation
      */
     function getNavigation()
 

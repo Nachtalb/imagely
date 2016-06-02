@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @copyright   Nick Espig <nicku8.com>
- * @author      Nick Espig <info@nicku8.com>
+ * @copyright   Nick Espig <nickespig.xyz>
+ * @author      Nick Espig <info@nickespig.xyz>
  * @package     imagely
  * @version     1.0
  * @subpackage  core
@@ -11,7 +11,10 @@ class Gallery
 {
 
     /**
-     * @return array
+     * Get all information from all galleries sorted by creationDate
+     *
+     * @return array - Array of all galleries with these information: [n] - id, author, status, name, description,
+     *               createDate and modifiedData
      */
     function getAll()
     {
@@ -25,14 +28,17 @@ class Gallery
     }
 
     /**
-     * @param $author
+     * Get all galleries from a specific user by it's id sorted by creationDate
      *
-     * @return array
+     * @param int $userID - Authors ID
+     *
+     * @return array - Array of all galleries from the given userID with the following data: [n] - id, author, status,
+     *               name, description, createDate and modifiedData
      */
-    function getAllByAuthor($author)
+    function getAllByAuthor($userID)
     {
         $return       = [];
-        $returned_set = $GLOBALS['db']->query('SELECT * FROM gallery WHERE author=' . $author . ' ORDER BY creationDate DESC');
+        $returned_set = $GLOBALS['db']->query('SELECT * FROM gallery WHERE author=' . $userID . ' ORDER BY creationDate DESC');
         while ($result = $returned_set->fetch_array()) {
             $return[] = $result;
         }
@@ -41,19 +47,9 @@ class Gallery
     }
 
     /**
-     * @param $id
+     * Gets all ID's of all galleries
      *
-     * @return String
-     */
-    function getAuthorNameById($id)
-    {
-        $user = new User;
-
-        return $user->getNameById($id);
-    }
-
-    /**
-     * @return array
+     * @return array - Array with all galleryID's
      */
     function getAvailableGalleries()
     {
@@ -67,21 +63,29 @@ class Gallery
     }
 
     /**
-     * @param $request
+     * Create a gallery
+     *
+     * @param array $data - Data of the gallery must contain these keys: author : int - the authors userID, status :
+     *                    boolean - the status of the gallery, name : string - Name of the gallery, description :
+     *                    string - description of the gallery , creationDate : string and modifiedDate : string - the
+     *                    las two as formatted date (this will be changed to timestamp)
      */
-    function createGallery($request)
+    function createGallery($data)
     {
-        $author       = $request['author'];
-        $status       = htmlentities($request['status']);
-        $name         = htmlentities($request['name']);
-        $description  = htmlentities($request['description']);
-        $creationDate = $request['creationDate'];
-        $modifiedDate = $request['modifiedDate'];
+        $author       = $data['author'];
+        $status       = htmlentities($data['status']);
+        $name         = htmlentities($data['name']);
+        $description  = htmlentities($data['description']);
+        $creationDate = $data['creationDate'];
+        $modifiedDate = $data['modifiedDate'];
         $GLOBALS['db']->exec('INSERT INTO gallery (author, status, name, description, creationDate, modifiedDate) VALUES (\'' . $author . '\', \'' . $status . '\', \'' . $name . '\', \'' . $description . '\', \'' . $creationDate . '\', \'' . $modifiedDate . '\')');
     }
 
     /**
-     * @param $request
+     * Updates a gallery
+     *
+     * @param array $request - New gallery data  must contain: id : int, status : boolean, name : string, description :
+     *                       string and modifiedDate : string (will be change to timestamp in the future)
      */
     function editGallery($request)
     {
@@ -94,18 +98,22 @@ class Gallery
     }
 
     /**
-     * @param $userId
+     * Deletes all galleries from a user
+     *
+     * @param int $userID - Users ID
      */
-    function deleteGalleryByUser($userId)
+    function deleteGalleryByUser($userID)
     {
-        $returned_set = $GLOBALS['db']->query('SELECT id FROM gallery WHERE author=' . $userId);
+        $returned_set = $GLOBALS['db']->query('SELECT id FROM gallery WHERE author=' . $userID);
         while ($result = $returned_set->fetch_array()) {
             Gallery::deleteGalleryById($result['id']);
         }
     }
 
     /**
-     * @param $id
+     * Deletes Gallery by it's ID
+     *
+     * @param int $id - The Gallery's ID
      */
     function deleteGalleryById($id)
     {
@@ -113,9 +121,12 @@ class Gallery
     }
 
     /**
-     * @param $id
+     * Gets all information from a specific gallery by it's ID
      *
-     * @return mixed
+     * @param int $id - Gallery ID
+     *
+     * @return mixed - An Array with this data: id, author - ID of the user, status, name, description, creationDate,
+     *               modifiedDate
      */
     function getGalleryById($id)
     {
@@ -127,36 +138,42 @@ class Gallery
     }
 
     /**
-     * @param $id
+     * Gets all images from a gallery
      *
-     * @return mixed
+     * @param int $galleryID - the galleries ID
+     *
+     * @return mixed - An Array with the following data: [n] - id, galleryId, imagePath, thumbnailPath, thumbnailPath2
+     *               and thumbnailPath3
      */
-    function getImageByGalleryId($id)
+    function getImageByGalleryId($galleryID)
     {
-        $returned_set = $GLOBALS['db']->query('SELECT * FROM image WHERE galleryId=' . $id);
+        $returned_set = $GLOBALS['db']->query('SELECT * FROM image WHERE galleryId=' . $galleryID);
         $return       = $returned_set->fetch_array();
 
         return $return;
     }
-
+    
     /**
-     * @param $userId
-     * @param $id
-     * @param $redirect
+     * Check if given user id matches with the given id or if the user is an admin, otherwise it will forward the user
+     * to the given url
+     *
+     * @param int $userID      - The users ID
+     * @param int $id          - ID you want to compare
+     * @param int $redirectURL - URL to redirect to
      *
      * @return bool
      */
-    function checkIfOwnGalleryRedirect($userId, $id, $redirect)
+    function checkIfOwnAccountOrRedirect($userID, $id, $redirectURL)
     {
         $return       = [];
-        $returned_set = $GLOBALS['db']->query('SELECT id FROM gallery WHERE author=' . $userId);
+        $returned_set = $GLOBALS['db']->query('SELECT id FROM gallery WHERE author=' . $userID);
         while ($result = $returned_set->fetch_array()) {
             $return[] = (string)$result['id'];
         }
-        if (in_array($id, $return, TRUE) || User::isAdmin($userId) == 1) {
+        if (in_array($id, $return, TRUE) || User::isAdmin($userID) == 1) {
             return TRUE;
         }
-        header($redirect);
+        header($redirectURL);
     }
 
 }
