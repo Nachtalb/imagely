@@ -29,7 +29,7 @@ class Language
      *
      * @param string [$language] - language-shorthand, default is de
      *
-     * @return string - loaded language 
+     * @return array - loaded language
      */
     function getLanguageArray($language = 'de')
     {
@@ -42,9 +42,8 @@ class Language
                 break;
             default:
                 require_once(DOCUMENT_ROOT . '/data/lang/german.php');
-                $language = 'de';
         }
 
-        return $language;
+        return $lang;
     }
 }
