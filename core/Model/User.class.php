@@ -20,9 +20,10 @@ class User
     function getAll()
     {
         try {
-            $return       = [];
-            $returned_set = $GLOBALS['db']->query('SELECT * FROM user');
-            while ($result = $returned_set->fetch_array()) {
+            $return = [];
+            $sth    = $GLOBALS['db']->prepare('SELECT * FROM user');
+            $sth->execute();
+            while ($result = $sth->fetchAll()) {
                 $return[] = $result;
             }
 
@@ -42,9 +43,10 @@ class User
     function getAvailableUsersId()
     {
         try {
-            $return       = [];
-            $returned_set = $GLOBALS['db']->query('SELECT id FROM user');
-            while ($result = $returned_set->fetch_array()) {
+            $return = [];
+            $sth    = $GLOBALS['db']->prepare('SELECT id FROM user');
+            $sth->execute();
+            while ($result = $sth->fetchALL()) {
                 $return[] = (int)$result['id'];
             }
 
@@ -66,8 +68,9 @@ class User
     function getUserById($userID)
     {
         try {
-            $returned_set = $GLOBALS['db']->query('SELECT * FROM user WHERE id=' . $userID);
-            $return       = $returned_set->fetch_array();
+            $sth = $GLOBALS['db']->prepare('SELECT * FROM user WHERE id=' . $userID);
+            $sth->execute();
+            $return = $sth->fetchAll();
 
             return $return;
 
@@ -87,8 +90,9 @@ class User
     function getNameById($userID)
     {
         try {
-            $returned_set = $GLOBALS['db']->query('SELECT name FROM user WHERE id=' . $userID);
-            $result       = $returned_set->fetch_array();
+            $sth = $GLOBALS['db']->prepare('SELECT name FROM user WHERE id=' . $userID);
+            $sth->execute();
+            $result = $sth->fetchAll();
 
             return $result['name'];
 
@@ -108,8 +112,10 @@ class User
     function getIdByName($username)
     {
         try {
-            $returned_set = $GLOBALS['db']->query('SELECT id FROM user WHERE name=' . $username);
-            $result       = $returned_set->fetch_array();
+            $sth = $GLOBALS['db']->prepare('SELECT id FROM user WHERE name=' . $username);
+            $sth->execute();
+
+            $result = $sth->fetchAll();
 
             return ($result !== NULL) ? (int)$result['id'] : FALSE;
 
@@ -132,8 +138,8 @@ class User
             $name     = $data['username'];
             $password = password_hash($data['password'], PASSWORD_DEFAULT);
             //fixme: something is not right here
-            $query = $GLOBALS['db']->query('INSERT INTO user (name, password) VALUES (\'' . $name . '\', \'' . $password . '\')');
-            $query::execute();
+            $sth = $GLOBALS['db']->prepare('INSERT INTO user (name, password) VALUES (\'' . $name . '\', \'' . $password . '\')');
+            $sth::execute();
 
         } catch (\Exception $e) {
             throw new Exception("Error  : " . $e->getMessage());
@@ -156,13 +162,13 @@ class User
             $password = password_hash($password, PASSWORD_DEFAULT);
             if (isset($isAdmin)) {
                 $isAdmin = ($isAdmin === TRUE || $isAdmin === 1 || $isAdmin === '1') ? 1 : 0;
-                $query   = $GLOBALS['db']->query('UPDATE user SET password=\'' . $password . '\', isAdmin=\'' . $isAdmin . '\' WHERE id=' . $userID);
+                $sth     = $GLOBALS['db']->prepare('UPDATE user SET password=\'' . $password . '\', isAdmin=\'' . $isAdmin . '\' WHERE id=' . $userID);
 
             } else {
-                $query = $GLOBALS['db']->query('UPDATE user SET password=\'' . $password . '\' WHERE id=' . $userID);
+                $sth = $GLOBALS['db']->prepare('UPDATE user SET password=\'' . $password . '\' WHERE id=' . $userID);
 
             }
-            $query->execute();
+            $sth->execute();
 
         } catch (\Exception $e) {
             throw new Exception("Error  : " . $e->getMessage());
@@ -180,8 +186,9 @@ class User
     function getHashById($userID)
     {
         try {
-            $returned_set = $GLOBALS['db']->query('SELECT password FROM user WHERE id=' . $userID);
-            $result       = $returned_set->fetch_array();
+            $sth = $GLOBALS['db']->prepare('SELECT password FROM user WHERE id=' . $userID);
+            $sth->execute();
+            $result = $sth->fetchAll();
 
             return $result['password'];
         } catch (\Exception $e) {
@@ -201,8 +208,8 @@ class User
     {
         try {
             Gallery::deleteGalleryByUser($userId);
-            $query = $GLOBALS['db']->query('DELETE FROM user WHERE id=' . $userId);
-            $query::execute();
+            $sth = $GLOBALS['db']->prepare('DELETE FROM user WHERE id=' . $userId);
+            $sth::execute();
         } catch (\Exception $e) {
             throw new Exception("Error  : " . $e->getMessage());
         }
@@ -212,8 +219,8 @@ class User
      * Check if given user id matches with the given id or if the user is an admin, otherwise it will forward the user
      * to the given url
      *
-     * @param int $userID - The users ID
-     * @param int $id - ID you want to compare
+     * @param int $userID      - The users ID
+     * @param int $id          - ID you want to compare
      * @param int $redirectURL - URL to redirect to
      *
      * @return bool
@@ -237,8 +244,10 @@ class User
      */
     function isAdmin($id)
     {
-        $returned_set = $GLOBALS['db']->query('SELECT isAdmin FROM user WHERE id=' . $id);
-        $result       = ($returned_set->fetch_array()['isAdmin'] == '1');
+        $sth = $GLOBALS['db']->prepare('SELECT isAdmin FROM user WHERE id=' . $id);
+        $sth->execute();
+        $result = json_decode(json_encode($sth->fetchAll()['isAdmin']), TRUE);
+        $result = ($result == '1');
 
         return $result;
     }

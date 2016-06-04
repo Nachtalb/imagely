@@ -18,12 +18,11 @@ class Gallery
      */
     function getAll()
     {
-        $return       = [];
-        $returned_set = $GLOBALS['db']->query('SELECT * FROM gallery ORDER BY creationDate DESC');
-        while ($result = $returned_set->fetch_array()) {
-            $return[] = $result;
-        }
-
+        $return = [];
+        $sth    = $GLOBALS['db']->prepare('SELECT * FROM gallery ORDER BY creationDate DESC');
+        $sth->execute();
+        $result = $sth->fetchAll();
+        $return = json_decode(json_encode($result), true);
         return $return;
     }
 
@@ -37,12 +36,11 @@ class Gallery
      */
     function getAllByAuthor($userID)
     {
-        $return       = [];
-        $returned_set = $GLOBALS['db']->query('SELECT * FROM gallery WHERE author=' . $userID . ' ORDER BY creationDate DESC');
-        while ($result = $returned_set->fetch_array()) {
-            $return[] = $result;
-        }
-
+        $return = [];
+        $sth    = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE author=' . $userID . ' ORDER BY creationDate DESC');
+        $sth->execute();
+        $result = $sth->fetchAll();
+        $return = json_decode(json_encode($result), true);
         return $return;
     }
 
@@ -53,12 +51,11 @@ class Gallery
      */
     function getAvailableGalleries()
     {
-        $return       = [];
-        $returned_set = $GLOBALS['db']->query('SELECT id FROM gallery');
-        while ($result = $returned_set->fetch_array()) {
-            $return[] = $result['id'];
-        }
-
+        $return = [];
+        $sth    = $GLOBALS['db']->prepare('SELECT id FROM gallery');
+        $sth->execute();
+        $result = $sth->fetchAll();
+        $return = json_decode(json_encode($result), true);
         return $return;
     }
 
@@ -78,7 +75,8 @@ class Gallery
         $description  = htmlentities($data['description']);
         $creationDate = $data['creationDate'];
         $modifiedDate = $data['modifiedDate'];
-        $GLOBALS['db']->exec('INSERT INTO gallery (author, status, name, description, creationDate, modifiedDate) VALUES (\'' . $author . '\', \'' . $status . '\', \'' . $name . '\', \'' . $description . '\', \'' . $creationDate . '\', \'' . $modifiedDate . '\')');
+        $sth          = $GLOBALS['db']->prepare('INSERT INTO gallery (author, status, name, description, creationDate, modifiedDate) VALUES (\'' . $author . '\', \'' . $status . '\', \'' . $name . '\', \'' . $description . '\', \'' . $creationDate . '\', \'' . $modifiedDate . '\')');
+        $sth->execute();
     }
 
     /**
@@ -94,7 +92,8 @@ class Gallery
         $name         = htmlentities($request['name']);
         $description  = htmlentities($request['description']);
         $modifiedDate = $request['modifiedDate'];
-        $GLOBALS['db']->exec('UPDATE gallery SET status=\'' . $status . '\', name=\'' . $name . '\', description=\'' . $description . '\', modifiedDate=\'' . $modifiedDate . '\' WHERE id=' . $id);
+        $sth          = $GLOBALS['db']->prepare('UPDATE gallery SET status=\'' . $status . '\', name=\'' . $name . '\', description=\'' . $description . '\', modifiedDate=\'' . $modifiedDate . '\' WHERE id=' . $id);
+        $sth->execute();
     }
 
     /**
@@ -104,8 +103,9 @@ class Gallery
      */
     function deleteGalleryByUser($userID)
     {
-        $returned_set = $GLOBALS['db']->query('SELECT id FROM gallery WHERE author=' . $userID);
-        while ($result = $returned_set->fetch_array()) {
+        $sth = $GLOBALS['db']->prepare('SELECT id FROM gallery WHERE author=' . $userID);
+        $sth->execute();
+        while ($result = $sth->fetchAll()) {
             Gallery::deleteGalleryById($result['id']);
         }
     }
@@ -117,7 +117,8 @@ class Gallery
      */
     function deleteGalleryById($id)
     {
-        $GLOBALS['db']->exec('DELETE FROM gallery WHERE id=' . $id);
+        $sth = $GLOBALS['db']->prepare('DELETE FROM gallery WHERE id=' . $id);
+        $sth->execute();
     }
 
     /**
@@ -130,8 +131,9 @@ class Gallery
      */
     function getGalleryById($id)
     {
-        $returned_set          = $GLOBALS['db']->query('SELECT * FROM gallery WHERE id=' . $id);
-        $return                = $returned_set->fetch_array();
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE id=' . $id);
+        $sth->execute();
+        $return= json_decode(json_encode($sth->fetchAll()[0]), TRUE);
         $return['description'] = html_entity_decode($return['description']);
 
         return $return;
@@ -147,12 +149,13 @@ class Gallery
      */
     function getImageByGalleryId($galleryID)
     {
-        $returned_set = $GLOBALS['db']->query('SELECT * FROM image WHERE galleryId=' . $galleryID);
-        $return       = $returned_set->fetch_array();
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM image WHERE galleryId=' . $galleryID);
+        $sth->execute();
+        $return = $sth->fetchAll();
 
         return $return;
     }
-    
+
     /**
      * Check if given user id matches with the given id or if the user is an admin, otherwise it will forward the user
      * to the given url
@@ -165,9 +168,10 @@ class Gallery
      */
     function checkIfOwnAccountOrRedirect($userID, $id, $redirectURL)
     {
-        $return       = [];
-        $returned_set = $GLOBALS['db']->query('SELECT id FROM gallery WHERE author=' . $userID);
-        while ($result = $returned_set->fetch_array()) {
+        $return = [];
+        $sth    = $GLOBALS['db']->prepare('SELECT id FROM gallery WHERE author=' . $userID);
+        $sth->execute();
+        while ($result = $sth->fetchAll()) {
             $return[] = (string)$result['id'];
         }
         if (in_array($id, $return, TRUE) || User::isAdmin($userID) == 1) {

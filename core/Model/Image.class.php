@@ -19,9 +19,10 @@ class Image
      */
     function getAllByGalleryId($galleryId)
     {
-        $return       = [];
-        $returned_set = $GLOBALS['db']->query('SELECT * FROM image WHERE galleryId=' . $galleryId);
-        while ($result = $returned_set->fetch_array()) {
+        $return = [];
+        $sth    = $GLOBALS['db']->prepare('SELECT * FROM image WHERE galleryId=' . $galleryId);
+        $sth->execute();
+        while ($result = $sth->fetchAll()) {
             $return[] = $result;
         }
 
@@ -39,7 +40,8 @@ class Image
         $imagePath     = $request['imagePath'];
         $thumbnailPath = $request['thumbnailPath'];;
 
-        $GLOBALS['db']->exec('INSERT INTO image (galleryId, imagePath, thumbnailPath) VALUES (\'' . $galleryId . '\', \'' . $imagePath . '\', \'' . $thumbnailPath . '\')');
+        $sth = $GLOBALS['db']->prepare('INSERT INTO image (galleryId, imagePath, thumbnailPath) VALUES (\'' . $galleryId . '\', \'' . $imagePath . '\', \'' . $thumbnailPath . '\')');
+        $sth->execute();
     }
 
     /**
@@ -59,8 +61,9 @@ class Image
      */
     function deleteImageByGalleryId($galleryId)
     {
-        $returned_set = $GLOBALS['db']->query('SELECT id FROM image WHERE galleryId=' . $galleryId);
-        while ($result = $returned_set->fetch_array()) {
+        $sth = $GLOBALS['db']->prepare('SELECT id FROM image WHERE galleryId=' . $galleryId);
+        $sth->execute();
+        while ($result = $sth->fetchAll()) {
             Image::deleteImageById($result['id']);
         }
     }
@@ -84,7 +87,8 @@ class Image
         unlink(DOCUMENT_ROOT . $unlinkThumbnailPath2);
         unlink(DOCUMENT_ROOT . $unlinkThumbnailPath3);
 
-        $GLOBALS['db']->exec('DELETE FROM image WHERE id=' . $imageId);
+        $sth = $GLOBALS['db']->prepare('DELETE FROM image WHERE id=' . $imageId);
+        $sth->execute();
     }
 
     /**
@@ -97,8 +101,9 @@ class Image
      */
     function getImageByID($imageID)
     {
-        $returned_set = $GLOBALS['db']->query('SELECT * FROM image WHERE id=' . $imageID);
-        $return       = $returned_set->fetch_array();
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM image WHERE id=' . $imageID);
+        $sth->execute();
+        $return = $sth->fetchAll();
 
         return $return;
     }
