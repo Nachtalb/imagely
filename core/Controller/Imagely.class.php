@@ -80,7 +80,6 @@ class Imagely
         $this->gallery  = new Gallery();
         $this->image    = new Image();
         $this->user     = new User();
-
     }
 
     /**
@@ -93,8 +92,8 @@ class Imagely
         //Check if username exists in session, to make sure that user is logged in
         if (isset($_SESSION['userId']) && isset($_SESSION['hash'])) {
             //Get hash from database and check if hash and id in session match, to make sure user is correctly logged in
-            $correctHash = $this->user->getHashById($_SESSION['userId']);
-            if ($correctHash === $_SESSION['hash'] || $this->user->isAdmin($_SESSION['userId']) === TRUE) {
+            $correctHash = User::getHashById($_SESSION['userId']);
+            if ($correctHash === $_SESSION['hash'] || User::isAdmin($_SESSION['userId']) === TRUE) {
                 return TRUE;
             }
 
@@ -134,33 +133,7 @@ class Imagely
         //Set requestedTemplate
         if (isset($urlParts[2])) {
             $requestedTemplate = $urlParts[2];
-            if (in_array($requestedTemplate, $this->availableActions, TRUE)) {
-                $availableUsers = $this->user->getAvailableUsersId();
-
-                switch ($requestedTemplate) {
-                    case 'DoLogin':
-                    case 'DoSignUp':
-                        break;
-                    case 'DoDeleteAccount':
-                        if (in_array((int)$urlParts[2], $availableUsers, TRUE)) {
-                            $requestedParameter = $urlParts[3];
-                            $redirect           = ($this->user->isAdmin($_SESSION['userId'])) ? $availableTemplates[5] : $availableTemplates[13];
-
-                        } else {
-                            header($defaultSite);
-                        }
-                        break;
-                    case 'DoEditAccount':
-                        if (in_array((int)$urlParts[2], $availableUsers, TRUE)) {
-                            $requestedParameter = $urlParts[3];
-                            $redirect           = ($this->user->isAdmin($_SESSION['userId'])) ? $availableTemplates[5] : $availableTemplates[13];
-
-                        } else {
-                            header($defaultSite);
-                        }
-                        break;
-                }
-            } else if (in_array($requestedTemplate, $availableTemplates, TRUE)) {
+            if (in_array($requestedTemplate, $availableTemplates, TRUE)) {
                 $requestedParameter = $urlParts[3];
             }
         } else {
@@ -168,19 +141,19 @@ class Imagely
         }
 
         //getTemplate by requestedTemplate
-        $page = (isset($redirect)) ? $this->template->getTemplate($redirect) : $this->template->getTemplate($requestedTemplate);
+        $page = $this->template->getTemplate($requestedTemplate);
 
         switch ($requestedTemplate) {
             case 'Home':
                 $content   = NULL;
                 $galleries = $this->gallery->getAll();
-                foreach ($galleries as $key => $value) {
+                foreach ($galleries as $item) {
                     $entry   = file_get_contents(DOCUMENT_ROOT . '/template/home_entry.html');
-                    $entry   = str_replace('{GALLERY_LINK_HREF}', 'Detail/' . $value['id'], $entry);
-                    $entry   = str_replace('{TXT_GALLERY_NAME}', $value['name'], $entry);
-                    $entry   = str_replace('{TXT_GALLERY_DESCRIPTION}', $value['description'], $entry);
-                    $entry   = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById($value['author']), $entry);
-                    $entry   = str_replace('{TXT_GALLERY_DATE}', $value['creationDate'], $entry);
+                    $entry   = str_replace('{GALLERY_LINK_HREF}', 'Detail/' . $item['id'], $entry);
+                    $entry   = str_replace('{TXT_GALLERY_NAME}', $item['name'], $entry);
+                    $entry   = str_replace('{TXT_GALLERY_DESCRIPTION}', $item['description'], $entry);
+                    $entry   = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById($item['author']), $entry);
+                    $entry   = str_replace('{TXT_GALLERY_DATE}', $item['creationDate'], $entry);
                     $content = $content . $entry;
                 }
                 $page = str_replace('{GALLERY_ENTRIES}', $content, $page);
@@ -191,26 +164,26 @@ class Imagely
                 Imagely::checkAdminRedirect($defaultSite);
                 $contentAccounts = NULL;
                 $users           = $this->user->getAll();
-                foreach ($users as $key => $value) {
+                foreach ($users as $key => $item) {
                     $entry           = file_get_contents(DOCUMENT_ROOT . '/template/account_entry.html');
-                    $entry           = str_replace('{ACCOUNT_DELETE_HREF}', 'DoDeleteAccount/' . $value['id'], $entry);
-                    $entry           = str_replace('{ACCOUNT_EDIT_HREF}', 'EditAccount/' . $value['id'], $entry);
-                    $entry           = str_replace('{TXT_ACCOUNT_NAME}', $value['name'], $entry);
-                    $isAdminTxt      = $value['isAdmin'] == 1 ? $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_TRUE'] : $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_FALSE'];
+                    $entry           = str_replace('{ACCOUNT_DELETE_HREF}', 'DoDeleteAccount/' . $item['id'], $entry);
+                    $entry           = str_replace('{ACCOUNT_EDIT_HREF}', 'EditAccount/' . $item['id'], $entry);
+                    $entry           = str_replace('{TXT_ACCOUNT_NAME}', $item['name'], $entry);
+                    $isAdminTxt      = $item['isAdmin'] == 1 ? $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_TRUE'] : $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_FALSE'];
                     $entry           = str_replace('{TXT_ACCOUNT_ISADMIN}', $isAdminTxt, $entry);
                     $contentAccounts = $contentAccounts . $entry;
                 }
                 $page             = str_replace('{ACCOUNT_ENTRIES}', $contentAccounts, $page);
                 $contentGalleries = NULL;
                 $galleries        = $this->gallery->getAll();
-                foreach ($galleries as $key => $value) {
+                foreach ($galleries as $key => $item) {
                     $entry            = file_get_contents(DOCUMENT_ROOT . '/template/gallery_entry.html');
-                    $entry            = str_replace('{GALLERIES_EDIT_HREF}', 'Edit/' . $value['id'], $entry);
-                    $entry            = str_replace('{GALLERIES_LINK_HREF}', 'Detail/' . $value['id'], $entry);
-                    $entry            = str_replace('{GALLERIES_DELETE_HREF}', 'DoDeleteGallery/' . $value['id'], $entry);
-                    $entry            = str_replace('{TXT_GALLERIES_NAME}', $value['name'], $entry);
-                    $entry            = str_replace('{TXT_GALLERIES_DESCRIPTION}', $value['description'], $entry);
-                    $entry            = str_replace('{TXT_GALLERIES_MODIFIED}', $value['modifiedDate'], $entry);
+                    $entry            = str_replace('{GALLERIES_EDIT_HREF}', 'Edit/' . $item['id'], $entry);
+                    $entry            = str_replace('{GALLERIES_LINK_HREF}', 'Detail/' . $item['id'], $entry);
+                    $entry            = str_replace('{GALLERIES_DELETE_HREF}', 'DoDeleteGallery/' . $item['id'], $entry);
+                    $entry            = str_replace('{TXT_GALLERIES_NAME}', $item['name'], $entry);
+                    $entry            = str_replace('{TXT_GALLERIES_DESCRIPTION}', $item['description'], $entry);
+                    $entry            = str_replace('{TXT_GALLERIES_MODIFIED}', $item['modifiedDate'], $entry);
                     $contentGalleries = $contentGalleries . $entry;
                 }
                 $page = str_replace('{GALLERY_ENTRIES}', $contentGalleries, $page);
@@ -235,8 +208,9 @@ class Imagely
                 if (isset($_POST)) {
                     $id                                             = $this->user->getIdByName('\'' . $_POST['Username'] . '\'');
                     $_SESSION['SESSION_VARS']['TXT_LOGIN_USERNAME'] = $_POST['Username'];
-                    if ($id === FALSE)
+                    if ($id === FALSE) {
                         $this->redirectTo($availableTemplates[3], $requestedLanguage);
+                    }
                     $hash = $this->user->getHashById($id);
                     if (password_verify($_POST['Password'], $hash)) {
                         $request             = [];
@@ -287,7 +261,7 @@ class Imagely
                 $galleryArr = $this->gallery->getGalleryById($requestedParameter);
                 $images     = $this->gallery->getImageByGalleryId($requestedParameter);
 
-                $page = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById(galleryArr['author']), $page);
+                $page = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById($galleryArr['author']), $page);
                 $page = str_replace('{TXT_GALLERY_DATE}', $galleryArr['creationDate'], $page);
                 $page = str_replace('{TXT_GALLERY_NAME}', $galleryArr['name'], $page);
                 $page = str_replace('{TXT_GALLERY_DESCRIPTION}', $galleryArr['description'], $page);
@@ -386,14 +360,14 @@ class Imagely
                 Imagely::checkSessionRedirect($defaultSite);
                 $content   = NULL;
                 $galleries = $this->gallery->getAllByAuthor($_SESSION['userId']);
-                foreach ($galleries as $key => $value) {
+                foreach ($galleries as $key => $item) {
                     $entry   = file_get_contents(DOCUMENT_ROOT . '/template/gallery_entry.html');
-                    $entry   = str_replace('{GALLERIES_EDIT_HREF}', 'Edit/' . $value['id'], $entry);
-                    $entry   = str_replace('{GALLERIES_LINK_HREF}', 'Detail/' . $value['id'], $entry);
-                    $entry   = str_replace('{GALLERIES_DELETE_HREF}', 'DoDeleteGallery/' . $value['id'], $entry);
-                    $entry   = str_replace('{TXT_GALLERIES_NAME}', $value['name'], $entry);
-                    $entry   = str_replace('{TXT_GALLERIES_DESCRIPTION}', $value['description'], $entry);
-                    $entry   = str_replace('{TXT_GALLERIES_MODIFIED}', $value['modifiedDate'], $entry);
+                    $entry   = str_replace('{GALLERIES_EDIT_HREF}', 'Edit/' . $item['id'], $entry);
+                    $entry   = str_replace('{GALLERIES_LINK_HREF}', 'Detail/' . $item['id'], $entry);
+                    $entry   = str_replace('{GALLERIES_DELETE_HREF}', 'DoDeleteGallery/' . $item['id'], $entry);
+                    $entry   = str_replace('{TXT_GALLERIES_NAME}', $item['name'], $entry);
+                    $entry   = str_replace('{TXT_GALLERIES_DESCRIPTION}', $item['description'], $entry);
+                    $entry   = str_replace('{TXT_GALLERIES_MODIFIED}', $item['modifiedDate'], $entry);
                     $content = $content . $entry;
                 }
                 $page = str_replace('{GALLERY_ENTRIES}', $content, $page);
@@ -401,19 +375,18 @@ class Imagely
             default:
 
         }
-
         $page = str_replace('{DEFAULT_SITE}', PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[0], $page);
         $page = str_replace('{NAVIGATION}', $this->template->getNavigation(), $page);
         $page = str_replace('{PATH_OFFSET}', PATH_OFFSET, $page);
         $page = str_replace('{LANGUAGE}', $requestedLanguage, $page);
 
-        foreach ($_SESSION['SESSION_VARS'] as $key => $value) {
-            $page = str_replace('{' . $key . '}', $value, $page);
+        foreach ($_SESSION['SESSION_VARS'] as $key => $item) {
+            $page = str_replace('{' . $key . '}', $item, $page);
         }
 
         //Replace placeholder through requestedLanguage
-        foreach ($languageArray as $key => $value) {
-            $page = str_replace('{' . $key . '}', $value, $page);
+        foreach ($languageArray as $key => $item) {
+            $page = str_replace('{' . $key . '}', $item, $page);
         }
 
         $page = preg_replace('/{TXT_[A-Z_]+}/', '', $page);
@@ -446,7 +419,8 @@ class Imagely
     }
 
     /**
-     * Checks if the logged in user is an admin, and if yes it returns true otherwise it redirects the client to the redirect page
+     * Checks if the logged in user is an admin, and if yes it returns true otherwise it redirects the client to the
+     * redirect page
      *
      * @param string $redirect - Page to redirect to
      *
