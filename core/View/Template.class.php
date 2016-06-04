@@ -64,9 +64,60 @@ class Template
      */
     function getTemplate($pageName)
     {
-        $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
-        $page     = file_get_contents(DOCUMENT_ROOT . '/template/' . strtolower($pageName) . '.html');
-        $template = str_replace('{CONTENT}', $page, $template);
+        switch ($pageName) {
+            case 'Account':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/account.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'Admin':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/admin.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'Create':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/create.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'Detail':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/detail.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'Edit':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/edit.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'Home':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/home.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'Login':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/login.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'Galleries':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/galleries.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'Signup':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/signup.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            case 'DoSignup':
+                $template = file_get_contents(DOCUMENT_ROOT . '/template/index.html');
+                $page     = file_get_contents(DOCUMENT_ROOT . '/template/account.html');
+                $template = str_replace('{CONTENT}', $page, $template);
+                break;
+            default:
+
+        }
 
         return $template;
     }
