@@ -38,15 +38,4 @@ try {
     throw new PDOException("Error  : " . $e->getMessage());
 }
 
-//Create connection
-$GLOBALS['db'] = new mysqli($CONFIG['DB']['HOST'], $CONFIG['DB']['USER'], $CONFIG['DB']['PASSWORD'], $CONFIG['DB']['NAME']);
-
-//Check db connection
-if (mysqli_connect_errno()) {
-    printf('Connection failed: %s\n', mysqli_connect_error());
-    exit();
-}
-
-//Set charset
-$GLOBALS['db']->query("SET NAMES 'utf8'");
 $GLOBALS['CONFIG'] = $CONFIG['DEFAULT'];
