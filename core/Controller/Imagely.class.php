@@ -206,16 +206,18 @@ class Imagely
                 break;
             case 'DoLogin':
                 if (isset($_POST)) {
-                    $id                                             = $this->user->getIdByName('\'' . $_POST['Username'] . '\'');
-                    $_SESSION['SESSION_VARS']['TXT_LOGIN_USERNAME'] = $_POST['Username'];
+                    $username = htmlentities($_POST['Username']);
+                    $password  = htmlentities($_POST['Password']);
+                    $id = $this->user->getIdByName('\'' . $username . '\'');
+                    $_SESSION['SESSION_VARS']['TXT_LOGIN_USERNAME'] = $username;
                     if ($id === FALSE) {
                         $this->redirectTo($availableTemplates[3], $requestedLanguage);
                     }
                     $hash = $this->user->getHashById($id);
-                    if (password_verify($_POST['Password'], $hash)) {
+                    if (password_verify($password, $hash)) {
                         $request             = [];
-                        $request['username'] = $_POST['Username'];
-                        $request['password'] = $_POST['Password'];
+                        $request['username'] = $username;
+                        $request['password'] = $password;
                         $_POST               = [];
                         $id                  = $this->user->getIdByName('\'' . $request['username'] . '\'');
                         $_SESSION['userId']  = $id;

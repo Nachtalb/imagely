@@ -18,11 +18,11 @@ class Gallery
      */
     function getAll()
     {
-        $return = [];
-        $sth    = $GLOBALS['db']->prepare('SELECT * FROM gallery ORDER BY creationDate DESC');
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery ORDER BY creationDate DESC');
         $sth->execute();
         $result = $sth->fetchAll();
-        $return = json_decode(json_encode($result), true);
+        $return = json_decode(json_encode($result), TRUE);
+
         return $return;
     }
 
@@ -36,11 +36,11 @@ class Gallery
      */
     function getAllByAuthor($userID)
     {
-        $return = [];
-        $sth    = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE author=' . $userID . ' ORDER BY creationDate DESC');
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE author=' . $userID . ' ORDER BY creationDate DESC');
         $sth->execute();
         $result = $sth->fetchAll();
-        $return = json_decode(json_encode($result), true);
+        $return = json_decode(json_encode($result), TRUE);
+
         return $return;
     }
 
@@ -51,11 +51,11 @@ class Gallery
      */
     function getAvailableGalleries()
     {
-        $return = [];
-        $sth    = $GLOBALS['db']->prepare('SELECT id FROM gallery');
+        $sth = $GLOBALS['db']->prepare('SELECT id FROM gallery');
         $sth->execute();
         $result = $sth->fetchAll();
-        $return = json_decode(json_encode($result), true);
+        $return = json_decode(json_encode($result), TRUE);
+
         return $return;
     }
 
@@ -105,7 +105,7 @@ class Gallery
     {
         $sth = $GLOBALS['db']->prepare('SELECT id FROM gallery WHERE author=' . $userID);
         $sth->execute();
-        while ($result = $sth->fetchAll()) {
+        while ($result = json_decode(json_encode($sth->fetchAll()), TRUE)) {
             Gallery::deleteGalleryById($result['id']);
         }
     }
@@ -133,7 +133,7 @@ class Gallery
     {
         $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE id=' . $id);
         $sth->execute();
-        $return= json_decode(json_encode($sth->fetchAll()[0]), TRUE);
+        $return                = json_decode(json_encode($sth->fetch()), TRUE);
         $return['description'] = html_entity_decode($return['description']);
 
         return $return;
@@ -151,7 +151,7 @@ class Gallery
     {
         $sth = $GLOBALS['db']->prepare('SELECT * FROM image WHERE galleryId=' . $galleryID);
         $sth->execute();
-        $return = $sth->fetchAll();
+        $return = json_decode(json_encode($sth->fetchAll()), TRUE);
 
         return $return;
     }
@@ -171,13 +171,15 @@ class Gallery
         $return = [];
         $sth    = $GLOBALS['db']->prepare('SELECT id FROM gallery WHERE author=' . $userID);
         $sth->execute();
-        while ($result = $sth->fetchAll()) {
+        while ($result = json_decode(json_encode($sth->fetch()), TRUE)) {
             $return[] = (string)$result['id'];
         }
         if (in_array($id, $return, TRUE) || User::isAdmin($userID) == 1) {
             return TRUE;
         }
         header($redirectURL);
+
+        return FALSE;
     }
 
 }

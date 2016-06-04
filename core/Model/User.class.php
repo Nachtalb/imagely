@@ -20,13 +20,10 @@ class User
     function getAll()
     {
         try {
-            $return = [];
             $sth    = $GLOBALS['db']->prepare('SELECT * FROM user');
             $sth->execute();
-            while ($result = $sth->fetchAll()) {
-                $return[] = $result;
-            }
-
+            $return = json_decode(json_encode($sth->fetchAll()), TRUE);
+            
             return $return;
 
         } catch (\Exception $e) {
@@ -70,7 +67,7 @@ class User
         try {
             $sth = $GLOBALS['db']->prepare('SELECT * FROM user WHERE id=' . $userID);
             $sth->execute();
-            $return = $sth->fetchAll();
+            $return = json_decode(json_encode($sth->fetch()), TRUE);
 
             return $return;
 
@@ -92,7 +89,7 @@ class User
         try {
             $sth = $GLOBALS['db']->prepare('SELECT name FROM user WHERE id=' . $userID);
             $sth->execute();
-            $result = $sth->fetchAll();
+            $result = json_decode(json_encode($sth->fetch()), TRUE);
 
             return $result['name'];
 
@@ -115,7 +112,7 @@ class User
             $sth = $GLOBALS['db']->prepare('SELECT id FROM user WHERE name=' . $username);
             $sth->execute();
 
-            $result = $sth->fetchAll();
+            $result = json_decode(json_encode($sth->fetch()), TRUE);
 
             return ($result !== NULL) ? (int)$result['id'] : FALSE;
 
@@ -188,7 +185,7 @@ class User
         try {
             $sth = $GLOBALS['db']->prepare('SELECT password FROM user WHERE id=' . $userID);
             $sth->execute();
-            $result = $sth->fetchAll();
+            $result = json_decode(json_encode($sth->fetch()), TRUE);
 
             return $result['password'];
         } catch (\Exception $e) {
@@ -246,8 +243,9 @@ class User
     {
         $sth = $GLOBALS['db']->prepare('SELECT isAdmin FROM user WHERE id=' . $id);
         $sth->execute();
-        $result = json_decode(json_encode($sth->fetchAll()['isAdmin']), TRUE);
-        $result = ($result == '1');
+        $result = json_decode(json_encode($sth->fetch()), TRUE);
+
+        $result = ($result['isAdmin'] == '1');
 
         return $result;
     }
