@@ -492,7 +492,7 @@ class Imagely
      *
      * @return bool - Returns true if logged in
      */
-    function checkAdminRedirect($redirect)
+    function checkAdminRedirect(string $redirect)
     {
         //Check if username exists in session, to make sure that user is logged in
         if (isset($_SESSION['userId'])) {
@@ -513,7 +513,7 @@ class Imagely
      * @param string|null $lang               - Language as string
      * @param string|int  $requestedParameter - Additional Parameter
      */
-    function redirectTo($site, $lang = NULL, $requestedParameter = '')
+    function redirectTo(string $site, int $lang = NULL, int $requestedParameter = '')
     {
         $availableTemplates = $this->template->getAvailableSites();
         $availableLanguages = $this->language->getAvailableLanguages();

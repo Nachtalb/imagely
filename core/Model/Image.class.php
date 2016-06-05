@@ -17,7 +17,7 @@ class Image
      *
      * @return array - Array of all images from this gallery
      */
-    function getAllByGalleryId($galleryId)
+    public function getAllByGalleryId(int $galleryId)
     {
         $return = [];
         $sth    = $GLOBALS['db']->prepare('SELECT * FROM image WHERE galleryId=' . $galleryId);
@@ -34,7 +34,7 @@ class Image
      *
      * @param array $request - Array with the following data : galleryId, imagePath, thumbnailPath
      */
-    function referImageInDB($request)
+    private function referImageInDB(array $request)
     {
         $galleryId     = $request['galleryId'];
         $imagePath     = $request['imagePath'];

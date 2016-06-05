@@ -14,7 +14,7 @@ class Language
      *
      * @return array - Array with all available language-shorthand
      */
-    function getAvailableLanguages()
+    public function getAvailableLanguages()
     {
         $availableLanguages = [
             'de',
@@ -31,7 +31,7 @@ class Language
      *
      * @return array - loaded language
      */
-    function getLanguageArray($language = 'de')
+    public function getLanguageArray(string $language = 'de')
     {
         switch ($language) {
             case 'de':

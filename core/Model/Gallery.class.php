@@ -16,7 +16,7 @@ class Gallery
      * @return array - Array of all galleries with these information: [n] - id, author, status, name, description,
      *               createDate and modifiedData
      */
-    function getAll()
+    public function getAll()
     {
         $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery ORDER BY creationDate DESC');
         $sth->execute();
@@ -45,7 +45,7 @@ class Gallery
      * @return array - Array of all galleries from the given userID with the following data: [n] - id, author, status,
      *               name, description, createDate and modifiedData
      */
-    function getAllByAuthor($userID)
+    public function getAllByAuthor(int $userID)
     {
         $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE author=' . $userID . ' ORDER BY creationDate DESC');
         $sth->execute();
@@ -71,7 +71,7 @@ class Gallery
      *
      * @return array - Array with all galleryID's
      */
-    function getAvailableGalleries()
+    public function getAvailableGalleries()
     {
         $sth = $GLOBALS['db']->prepare('SELECT id FROM gallery');
         $sth->execute();
@@ -100,7 +100,7 @@ class Gallery
      *                    string - description of the gallery , creationDate : string and modifiedDate : string - the
      *                    las two as formatted date (this will be changed to timestamp)
      */
-    function createGallery($data)
+    public function createGallery(array $data)
     {
         $this->checkImage($data['image']);
 
@@ -145,7 +145,7 @@ class Gallery
      * ['large'] => path
      * @throws Exception - If the given file is not an image
      */
-    private function createTeaserImage($image, $galleryID = NULL, $userID = NULL)
+    private function createTeaserImage(string $image, int $galleryID = NULL, int $userID = NULL)
     {
         $info = getimagesize($image['tmp_name']);
         if ($info[2] == IMAGETYPE_GIF)
@@ -180,7 +180,7 @@ class Gallery
      * @return bool - If it is an image
      * @throws Exception - If it's not an image
      */
-    private function checkImage($image)
+    private function checkImage(string $image)
     {
         $info = getimagesize($image['tmp_name']);
         if ($info === FALSE) {
@@ -205,7 +205,7 @@ class Gallery
      * @return array - Array with the 3 different sizes of thumbnails:
      *               small => path, medium => path, large => path
      */
-    private function createThumbnail($image, $name, $path)
+    private function createThumbnail(string $image, string $name, string $path)
     {
         $result = [];
 
@@ -261,7 +261,7 @@ class Gallery
      * @param array $data    - New gallery data  must contain: id : int, status : boolean, name : string, description :
      *                       string and modifiedDate : string (will be change to timestamp in the future)
      */
-    function editGallery($data)
+    public function editGallery(array $data)
     {
         $ID           = htmlentities($data['id']);
         $status       = $data['status'];
@@ -307,7 +307,7 @@ class Gallery
      *
      * @param int $userID - Users ID
      */
-    function deleteGalleryByUser($userID)
+    public function deleteGalleryByUser(int $userID)
     {
         $sth = $GLOBALS['db']->prepare('SELECT id FROM gallery WHERE author=' . $userID);
         $sth->execute();
@@ -321,7 +321,7 @@ class Gallery
      *
      * @param int $id - The Gallery's ID
      */
-    function deleteGalleryById($id)
+    public function deleteGalleryById(int $id)
     {
         $sth = $GLOBALS['db']->prepare('DELETE FROM gallery WHERE id=' . $id);
         $sth->execute();
@@ -335,7 +335,7 @@ class Gallery
      * @return mixed - An Array with this data: id, author - ID of the user, status, name, description, creationDate,
      *               modifiedDate
      */
-    function getGalleryById($id)
+    public function getGalleryById(int $id)
     {
         $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE id=' . $id);
         $sth->execute();
@@ -357,7 +357,7 @@ class Gallery
      * @return mixed - An Array with the following data: [n] - id, galleryId, imagePath, thumbnailPath, thumbnailPath2
      *               and thumbnailPath3
      */
-    function getImageByGalleryId($galleryID)
+    public function getImageByGalleryId(int $galleryID)
     {
         $sth = $GLOBALS['db']->prepare('SELECT * FROM image WHERE galleryId=' . $galleryID);
         $sth->execute();
@@ -376,7 +376,7 @@ class Gallery
      *
      * @return bool
      */
-    function checkIfOwnAccountOrRedirect($userID, $id, $redirectURL)
+    public function checkIfOwnAccountOrRedirect(int $userID, int $id, string $redirectURL)
     {
         $return = [];
         $sth    = $GLOBALS['db']->prepare('SELECT id FROM gallery WHERE author=' . $userID);
@@ -401,7 +401,7 @@ class Gallery
      *
      * @return float - Average luminance of the image
      */
-    public function get_avg_luminance($filename, $num_samples = 10)
+    public function get_avg_luminance(string $filename, int $num_samples = 20)
     {
         $img = imagecreatefrompng(DOCUMENT_ROOT . $filename);
 

@@ -17,13 +17,13 @@ class User
      *               as isAdmin
      * @throws Exception - If SQL statement isn't working
      */
-    function getAll()
+    public function getAll()
     {
         try {
-            $sth    = $GLOBALS['db']->prepare('SELECT * FROM user');
+            $sth = $GLOBALS['db']->prepare('SELECT * FROM user');
             $sth->execute();
             $return = json_decode(json_encode($sth->fetchAll()), TRUE);
-            
+
             return $return;
 
         } catch (\Exception $e) {
@@ -37,7 +37,7 @@ class User
      * @return array - Array with all user ID's
      * @throws Exception - If SQL statement isn't working
      */
-    function getAvailableUsersId()
+    public function getAvailableUsersId()
     {
         try {
             $return = [];
@@ -62,7 +62,7 @@ class User
      *               hash and 1 or as isAdmin
      * @throws Exception - If SQL statement isn't working
      */
-    function getUserById($userID)
+    public function getUserById(int $userID)
     {
         try {
             $sth = $GLOBALS['db']->prepare('SELECT * FROM user WHERE id=' . $userID);
@@ -84,7 +84,7 @@ class User
      * @return String - Username
      * @throws Exception - If SQL statement isn't working
      */
-    function getNameById($userID)
+    public function getNameById(int $userID)
     {
         try {
             $sth = $GLOBALS['db']->prepare('SELECT name FROM user WHERE id=' . $userID);
@@ -106,7 +106,7 @@ class User
      * @return string - userID
      * @throws Exception - If SQL statement isn't working
      */
-    function getIdByName($username)
+    public function getIdByName(string $username)
     {
         try {
             $sth = $GLOBALS['db']->prepare('SELECT id FROM user WHERE name=' . $username);
@@ -128,7 +128,7 @@ class User
      *
      * @throws Exception - If SQL statement isn't working
      */
-    function createUser($data)
+    public function createUser(array $data)
     {
         try {
 
@@ -153,7 +153,7 @@ class User
      * @throws Exception - If SQL statement isn't working
      *
      */
-    function editUserById($userID, $password, $isAdmin)
+    public function editUserByID(int $userID, string $password, bool $isAdmin)
     {
         try {
             $password = password_hash($password, PASSWORD_DEFAULT);
@@ -180,7 +180,7 @@ class User
      * @return String - The password hash as string
      * @throws Exception - If SQL statement isn't working
      */
-    function getHashById($userID)
+    public function getHashById($userID)
     {
         try {
             $sth = $GLOBALS['db']->prepare('SELECT password FROM user WHERE id=' . $userID);
