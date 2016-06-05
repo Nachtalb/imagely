@@ -110,6 +110,16 @@ class Gallery
 
     }
 
+    /**
+     * creates TeaseImage and the gallery folder, as well as the thumbnails
+     *
+     * @param string $image - Path to the image
+     *
+     * @return array - Array with the teaser image path and the thumbnail paths
+     *               ['imagePath'] => teaserImgPath, ['imageThumbnailPath] => ['small'] => path, ['medium'] => path,
+     *               ['large'] => path
+     * @throws Exception - If the given file is not an image
+     */
     private function createTeaserImage($image)
     {
         $info = getimagesize($image['tmp_name']);
@@ -137,6 +147,14 @@ class Gallery
         return $result;
     }
 
+    /**
+     * Checks if a file is an image (gif/jpeg/png)
+     *
+     * @param string $image - Path to file
+     *
+     * @return bool - If it is an image
+     * @throws Exception - If it's not an image
+     */
     private function checkImage($image)
     {
         $info = getimagesize($image['tmp_name']);
@@ -152,6 +170,16 @@ class Gallery
         return TRUE;
     }
 
+    /**
+     * Generates 3 different sizes of thumbnails 100px, 200px & 400px height
+     *
+     * @param string $image - Path to picture from which the thumbs should be created
+     * @param string $name  - name of hte picture
+     * @param string $path  - path to save the pictures
+     *
+     * @return array - Array with the 3 different sizes of thumbnails:
+     *               small => path, medium => path, large => path
+     */
     private function createThumbnail($image, $name, $path)
     {
         $result = [];
@@ -187,6 +215,11 @@ class Gallery
         return $result;
     }
 
+    /**
+     * Gets the number of the next gallery which will be created
+     *
+     * @return int - Number of next gallery
+     */
     private function getNextGalleryId()
     {
         $sth = $GLOBALS['db']->prepare('SELECT AUTO_INCREMENT FROM information_schema.tables WHERE table_name = \'gallery\' AND table_schema = \'imagely\' ');
@@ -194,7 +227,7 @@ class Gallery
 
         $result = json_decode(json_encode($sth->fetch()), TRUE);
 
-        return $result['AUTO_INCREMENT'];
+        return (int)$result['AUTO_INCREMENT'];
     }
 
     /**
@@ -304,6 +337,15 @@ class Gallery
         return FALSE;
     }
 
+    /**
+     * Get average luminance of an image to determine if it's dark or light
+     * Function from here: http://stackoverflow.com/a/5959461/5699307
+     *
+     * @param string $filename    - FilePath
+     * @param int    $num_samples - Get average luminance, by sampling $num_samples times in both x,y directions
+     *
+     * @return float - Average luminance of the image
+     */
     public function get_avg_luminance($filename, $num_samples = 10)
     {
         $img = imagecreatefrompng(DOCUMENT_ROOT . $filename);
