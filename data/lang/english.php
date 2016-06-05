@@ -51,16 +51,21 @@ $lang['TXT_IMAGELY_CONTENT_SUBHEADING'] = "They're great";
 $lang['TXT_IMAGELY_GALLERY_POSTED'] = "Created by:";
 
 //Create
-$lang['TXT_IMAGELY_CREATE_HEADING']      = "Create gallery";
-$lang['TXT_IMAGELY_CREATE_NAME']         = "Name";
-$lang['TXT_IMAGELY_CREATE_DESCRIPTION']  = "Description";
-$lang['TXT_IMAGELY_CREATE_IMAGE']        = "Teaserimage";
-$lang['TXT_IMAGELY_CREATE_IMAGE_BUTTON'] = "Choose teaserimage...";
-$lang['TXT_IMAGELY_CREATE_CREATE']       = "Create gallery";
+$lang['TXT_IMAGELY_CREATE_HEADING']            = "Create gallery";
+$lang['TXT_IMAGELY_CREATE_NAME']               = "Name";
+$lang['TXT_IMAGELY_CREATE_DESCRIPTION']        = "Description";
+$lang['TXT_IMAGELY_CREATE_IMAGE']              = "Teaserimage";
+$lang['TXT_IMAGELY_CREATE_IMAGE_BUTTON']       = "Choose teaserimage...";
+$lang['TXT_IMAGELY_CREATE_CREATE']             = "Create gallery";
+$lang['TXT_IMAGELY_CREATE_CREATED']            = "Your gallery has been successfully created.";
+$lang['TXT_IMAGELY_CREATE_PICTURE']            = "You have to uploaf JPEG or a PNG.";
+$lang['TXT_IMAGELY_CREATE_ALL_FIELDS']         = "You have to fill out all fields.";
+$lang['TXT_IMAGELY_CREATE_DESCRIPTION_LENGTH'] = "The description has a max of 500 characters..";
 
 //Galleries
 $lang['TXT_IMAGELY_GALLERIES_HEADING']  = "My galleries";
 $lang['TXT_IMAGELY_GALLERIES_MODIFIED'] = "Last modified:";
+$lang['TXT_IMAGELY_GALLERIES_YOU_SURE'] = "Are you sure you want to delete this gallery?";
 
 //Edit
 $lang['TXT_IMAGELY_EDIT_HEADING']      = "Edit gallery";

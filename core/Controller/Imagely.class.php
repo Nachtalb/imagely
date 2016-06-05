@@ -189,7 +189,7 @@ class Imagely
                 $page = str_replace('{GALLERY_ENTRIES}', $contentGalleries, $page);
                 break;
             case
-                'Account':
+            'Account':
                 Imagely::checkSessionRedirect($defaultSite);
                 $content    = NULL;
                 $user       = $this->user->getUserById($_SESSION['userId']);
@@ -302,21 +302,21 @@ class Imagely
                         $_SESSION['SESSION_VARS']['TXT_GALLERY_DESC_VALUE'] = $request['description'];
 
                         $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                            $e->getMessage() .
+                            $languageArray['TXT_IMAGELY_CREATE_PICTURE'] .
                             '</div></div></div>';
                         $this->redirectTo('Create', $requestedLanguage);
                     }
                     $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-info">' .
-                        'Your gallery has been created.' .
+                        $languageArray['TXT_IMAGELY_CREATE_CREATED'] .
                         '</div></div></div>';
                     $this->redirectTo('Home', $requestedLanguage);
                 } else if (count(strip_tags($_POST['description'])) > 500) {
                     $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                        'Description has a maximum of 500 characters!' .
+                        $languageArray['TXT_IMAGELY_CREATE_DESCRIPTION_LENGTH'] .
                         '</div></div></div>';
                 }
                 $_SESSION['SESSION_VARS']['TXT_INFO']               = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                    'Please fill all fields!' .
+                    $languageArray['TXT_IMAGELY_CREATE_ALL_FIELDS'] .
                     '</div></div></div>';
                 $_SESSION['SESSION_VARS']['TXT_GALLERY_NAME_VALUE'] = $_POST['name'];
                 $_SESSION['SESSION_VARS']['TXT_GALLERY_DESC_VALUE'] = $_POST['description'];
@@ -391,21 +391,21 @@ class Imagely
                         $this->gallery->editGallery($request);
                     } catch (Exception $e) {
                         $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                            $e->getMessage() .
+                            $languageArray['TXT_IMAGELY_CREATE_PICTURE'] .
                             '</div></div></div>';
                         $this->redirectTo('Edit', $requestedLanguage, $requestedParameter);
                     }
                     $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-info">' .
-                        'Your gallery has been updated.' .
+                        $languageArray['TXT_IMAGELY_CREATE_CREATED'] .
                         '</div></div></div>';
                     $this->redirectTo('Galleries');
                 } else if (count(strip_tags($_POST['description'])) > 500) {
                     $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                        'Description has a maximum of 500 characters!' .
+                        $languageArray['TXT_IMAGELY_CREATE_DESCRIPTION_LENGTH'] .
                         '</div></div></div>';
                 }
                 $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                    'Please fill all fields!' .
+                    $languageArray['TXT_IMAGELY_CREATE_ALL_FIELDS'] .
                     '</div></div></div>';
                 $this->redirectTo('Edit', $requestedLanguage, $requestedParameter);
                 break;

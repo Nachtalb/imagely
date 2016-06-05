@@ -51,16 +51,21 @@ $lang['TXT_IMAGELY_CONTENT_SUBHEADING'] = "Diese sind grossartig";
 $lang['TXT_IMAGELY_GALLERY_POSTED'] = "Erstellt von:";
 
 //Create
-$lang['TXT_IMAGELY_CREATE_HEADING']      = "Galerie erstellen";
-$lang['TXT_IMAGELY_CREATE_NAME']         = "Name";
-$lang['TXT_IMAGELY_CREATE_DESCRIPTION']  = "Beschreibung";
-$lang['TXT_IMAGELY_CREATE_IMAGE']        = "Teaserbild";
-$lang['TXT_IMAGELY_CREATE_IMAGE_BUTTON'] = "Teaserbild auswählen...";
-$lang['TXT_IMAGELY_CREATE_CREATE']       = "Galerie erstellen";
+$lang['TXT_IMAGELY_CREATE_HEADING']            = "Galerie erstellen";
+$lang['TXT_IMAGELY_CREATE_NAME']               = "Name";
+$lang['TXT_IMAGELY_CREATE_DESCRIPTION']        = "Beschreibung";
+$lang['TXT_IMAGELY_CREATE_IMAGE']              = "Teaserbild";
+$lang['TXT_IMAGELY_CREATE_IMAGE_BUTTON']       = "Teaserbild auswählen...";
+$lang['TXT_IMAGELY_CREATE_CREATE']             = "Galerie erstellen";
+$lang['TXT_IMAGELY_CREATE_CREATED']            = "Deine Gallerie wurde erfolgreicht erstellt.";
+$lang['TXT_IMAGELY_CREATE_PICTURE']            = "Du musst das Bild entweder als JPEG oder als PNG hochladen.";
+$lang['TXT_IMAGELY_CREATE_ALL_FIELDS']         = "Du musst alle Daten ausfüllen.";
+$lang['TXT_IMAGELY_CREATE_DESCRIPTION_LENGTH'] = "Die Beschreibung kann maximal 500 Zeichen lang sein.";
 
 //Galerien
 $lang['TXT_IMAGELY_GALLERIES_HEADING']  = "Meine Galerien";
 $lang['TXT_IMAGELY_GALLERIES_MODIFIED'] = "Zuletzt bearbeitet:";
+$lang['TXT_IMAGELY_GALLERIES_YOU_SURE'] = "Bist du dir sicher, dass du diese Galerie löschen willst?";
 
 //Edit
 $lang['TXT_IMAGELY_EDIT_HEADING']      = "Galerie bearbeiten";
