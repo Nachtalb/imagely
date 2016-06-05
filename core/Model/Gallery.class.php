@@ -69,14 +69,120 @@ class Gallery
      */
     function createGallery($data)
     {
+        $this->checkImage($data['image']);
+
         $author       = $data['author'];
-        $status       = htmlentities($data['status']);
+        $status       = $data['status'];
         $name         = htmlentities($data['name']);
         $description  = htmlentities($data['description']);
         $creationDate = $data['creationDate'];
         $modifiedDate = $data['modifiedDate'];
-        $sth          = $GLOBALS['db']->prepare('INSERT INTO gallery (author, status, name, description, creationDate, modifiedDate) VALUES (\'' . $author . '\', \'' . $status . '\', \'' . $name . '\', \'' . $description . '\', \'' . $creationDate . '\', \'' . $modifiedDate . '\')');
+
+        $teaserImage = $this->createTeaserImage($data['image']);
+
+        $teaserImagePath      = $teaserImage['imagePath'];
+        $teaserImageThumbnail = $teaserImage['imageThumbnailPath'];
+
+        $sth      = $GLOBALS['db']->prepare('INSERT INTO gallery (author,status,name,description,creationDate,modifiedDate,teaserImage,teaserImageThumbnail1,teaserImageThumbnail2,teaserImageThumbnail3) VALUES (:author,:status,:name,:description,:creationDate,:modifiedDate,:teaserImage,:teaserImageThumbnail1,:teaserImageThumbnail2,:teaserImageThumbnail3)');
+        $bindings = [
+            ':author'                => $author,
+            ':status'                => $status,
+            ':name'                  => $name,
+            ':description'           => $description,
+            ':creationDate'          => $creationDate,
+            ':modifiedDate'          => $modifiedDate,
+            ':teaserImage'           => $teaserImagePath,
+            ':teaserImageThumbnail1' => $teaserImageThumbnail['small'],
+            ':teaserImageThumbnail2' => $teaserImageThumbnail['medium'],
+            ':teaserImageThumbnail3' => $teaserImageThumbnail['large'],
+        ];
+        $sth->execute($bindings);
+
+    }
+
+    private function createTeaserImage($image)
+    {
+        $info = getimagesize($image['tmp_name']);
+        if ($info[2] == IMAGETYPE_GIF)
+            throw new Exception('Teaser image can\'t be a GIF, it has to be a JPEG or a PNG!');
+
+        $galleryID  = $this->getNextGalleryId();
+        $userID     = $_SESSION['userId'];
+        $folderPath = DOCUMENT_ROOT . '/data/media/gallery/' . $userID . DIRECTORY_SEPARATOR . $galleryID . DIRECTORY_SEPARATOR;
+        $imageName  = 'teaserImage';
+
+        $finalImagePaht = $folderPath . $imageName . '.png';
+        if (!is_dir($folderPath))
+            mkdir($folderPath, 0755, TRUE);
+
+        imagepng(imagecreatefromstring(file_get_contents($image['tmp_name'])), $finalImagePaht);
+        $thumnail = $this->createThumbnail($finalImagePaht, $imageName, $folderPath);
+
+        $result = [
+            'imagePath'          => $finalImagePaht,
+            'imageThumbnailPath' => $thumnail,
+        ];
+
+        return $result;
+    }
+
+    private function checkImage($image)
+    {
+        $info = getimagesize($image['tmp_name']);
+        if ($info === FALSE) {
+            throw new Exception("Unable to determine image type of uploaded file");
+        }
+
+
+        if (($info[2] !== IMAGETYPE_GIF) && ($info[2] !== IMAGETYPE_JPEG) && ($info[2] !== IMAGETYPE_PNG)) {
+            throw new Exception("Not a gif/jpeg/png");
+        }
+
+        return TRUE;
+    }
+
+    private function createThumbnail($image, $name, $path)
+    {
+        $result = [];
+
+        $imageInfo = getimagesize($image);
+        $width     = $imageInfo[0];
+        $height    = $imageInfo[1];
+
+        $new_height = [
+            'small'  => 100,
+            'medium' => 200,
+            'large'  => 400,
+        ];
+        foreach ($new_height as $sizeName => $new_thumb_height) {
+            $thumbname = $name . '.' . $sizeName . '.thumb.png';
+            $new_width = floor($width * ($new_thumb_height / $height));
+
+            list(, , $type) = $imageInfo;
+
+            $type               = image_type_to_extension($type);
+            $getResourceOfImage = 'imagecreatefrom' . $type;
+            $getResourceOfImage = str_replace('.', '', $getResourceOfImage);
+            $img                = $getResourceOfImage($image);
+            $tmp_img            = imagecreatetruecolor($new_width, $new_thumb_height);
+            imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_thumb_height, $width, $height);
+
+            imagepng($tmp_img, "{$path}{$thumbname}");
+
+            $result[ $sizeName ] = $path . $thumbname;
+        }
+
+        return $result;
+    }
+
+    private function getNextGalleryId()
+    {
+        $sth = $GLOBALS['db']->prepare('SELECT AUTO_INCREMENT FROM information_schema.tables WHERE table_name = \'gallery\' AND table_schema = \'imagely\' ');
         $sth->execute();
+
+        $result = json_decode(json_encode($sth->fetch()), TRUE);
+
+        return $result['AUTO_INCREMENT'];
     }
 
     /**

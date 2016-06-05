@@ -206,9 +206,9 @@ class Imagely
                 break;
             case 'DoLogin':
                 if (isset($_POST)) {
-                    $username = htmlentities($_POST['Username']);
-                    $password  = htmlentities($_POST['Password']);
-                    $id = $this->user->getIdByName('\'' . $username . '\'');
+                    $username                                       = htmlentities($_POST['Username']);
+                    $password                                       = htmlentities($_POST['Password']);
+                    $id                                             = $this->user->getIdByName('\'' . $username . '\'');
                     $_SESSION['SESSION_VARS']['TXT_LOGIN_USERNAME'] = $username;
                     if ($id === FALSE) {
                         $this->redirectTo($availableTemplates[3], $requestedLanguage);
@@ -270,19 +270,38 @@ class Imagely
                 break;
             case 'DoCreateGallery':
                 Imagely::checkSessionRedirect($defaultSite);
-                if (isset($_POST)) {
-                    $request                 = [];
+                if ((isset($_POST['name']) && $_POST['name'] != '') &&
+                    (isset($_POST['description']) && $_POST['description'] != '') &&
+                    isset($_FILES['image'])) {
                     $request['author']       = $_SESSION['userId'];
                     $request['name']         = $_POST['name'];
+                    $request['status']       = TRUE;
                     $request['description']  = $_POST['description'];
-                    $request['creationDate'] = date('Y-m-d h:i:s');
-                    $request['modifiedDate'] = date('Y-m-d h:i:s');
-                    $_POST                   = [];
+                    $request['creationDate'] = time();
+                    $request['modifiedDate'] = time();
+                    $request['image']        = $_FILES['image'];
 
-                    $this->gallery->createGallery($request);
+                    $_POST  = [];
+                    $_FILES = [];
 
-                    header('Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[1]);
+                    try {
+                        $this->gallery->createGallery($request);
+                    } catch (Exception $e) {
+                        $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                            $e->getMessage() .
+                            '</div></div></div>';
+                        $this->redirectTo('Create', $requestedLanguage);
+                    }
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-info">' .
+                        'Your gallery has been created.' .
+                        '</div></div></div>';
+                    $this->redirectTo('Home', $requestedLanguage);
                 }
+                $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                    'Please fill all fields!' .
+                    '</div></div></div>';
+                $this->redirectTo('Create', $requestedLanguage);
+
                 break;
             case 'DoCreateImage':
                 $request              = [];
@@ -384,6 +403,7 @@ class Imagely
 
         foreach ($_SESSION['SESSION_VARS'] as $key => $item) {
             $page = str_replace('{' . $key . '}', $item, $page);
+            unset($_SESSION['SESSION_VARS'][$key]);
         }
 
         //Replace placeholder through requestedLanguage
@@ -448,7 +468,7 @@ class Imagely
      * @param string $site - Site you want to redirect to
      * @param string $lang - Language as string
      */
-    function redirectTo($site, $lang)
+    function redirectTo($site, $lang = 'de')
     {
         $availableTemplates = $this->template->getAvailableSites();
         $availableLanguages = $this->language->getAvailableLanguages();

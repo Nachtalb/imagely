@@ -15,6 +15,7 @@
 <script type="text/javascript" src="{PATH_OFFSET}/lib/trix/trix.js"></script>
 <!-- Main Content -->
 <div class="container">
+    {TXT_INFO}
     <div class="row">
         <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
             <form action="{PATH_OFFSET}/{LANGUAGE}/DoCreateGallery" method="post" enctype="multipart/form-data">
@@ -24,7 +25,7 @@
                     </label>
 
 
-                    <input type="text" class="form-control" id="inputTitle" name="title"
+                    <input type="text" class="form-control" id="inputTitle" name="name"
                            placeholder="{TXT_IMAGELY_CREATE_NAME}">
 
                 </div>
@@ -34,7 +35,7 @@
                     </label>
 
 
-                    <input type="hidden" id="inputContent" name="content">
+                    <input type="hidden" id="inputContent" name="description">
                     <trix-editor class="form-control" input="inputContent"
                                  placeholder="{TXT_IMAGELY_CREATE_DESCRIPTION}"></trix-editor>
 
