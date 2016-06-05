@@ -23,15 +23,16 @@ class Gallery
         $result = $sth->fetchAll();
         $return = json_decode(json_encode($result), TRUE);
 
-
         for ($i = 0 ; $i < count($return) ; $i++) {
             $return[ $i ]['description'] = html_entity_decode($return[ $i ]['description']);
 
             $date = new DateTime();
             $date->setTimestamp($return[ $i ]['creationDate']);
             $return[ $i ]['creationDate'] = $date->format('d.m.Y H:i');
+            $date2                        = new DateTime();
+            $date2->setTimestamp($return[ $i ]['modifiedDate']);
+            $return[ $i ]['modifiedDate'] = $date2->format('d.m.Y H:i');
         }
-
 
         return $return;
     }
@@ -51,6 +52,17 @@ class Gallery
         $result = $sth->fetchAll();
         $return = json_decode(json_encode($result), TRUE);
 
+        for ($i = 0 ; $i < count($return) ; $i++) {
+            $return[ $i ]['description'] = html_entity_decode($return[ $i ]['description']);
+
+            $date = new DateTime();
+            $date->setTimestamp($return[ $i ]['creationDate']);
+            $return[ $i ]['creationDate'] = $date->format('d.m.Y H:i');
+            $date2                        = new DateTime();
+            $date2->setTimestamp($return[ $i ]['modifiedDate']);
+            $return[ $i ]['modifiedDate'] = $date2->format('d.m.Y H:i');
+        }
+
         return $return;
     }
 
@@ -65,6 +77,17 @@ class Gallery
         $sth->execute();
         $result = $sth->fetchAll();
         $return = json_decode(json_encode($result), TRUE);
+
+        for ($i = 0 ; $i < count($return) ; $i++) {
+            $return[ $i ]['description'] = html_entity_decode($return[ $i ]['description']);
+
+            $date = new DateTime();
+            $date->setTimestamp($return[ $i ]['creationDate']);
+            $return[ $i ]['creationDate'] = $date->format('d.m.Y H:i');
+            $date2                        = new DateTime();
+            $date2->setTimestamp($return[ $i ]['modifiedDate']);
+            $return[ $i ]['modifiedDate'] = $date2->format('d.m.Y H:i');
+        }
 
         return $return;
     }
@@ -113,21 +136,23 @@ class Gallery
     /**
      * creates TeaseImage and the gallery folder, as well as the thumbnails
      *
-     * @param string $image - Path to the image
+     * @param string   $image     - Path to the image
+     * @param null|int $galleryID - When it's set it uses this galleryID
+     * @param null|int $userID    - When it's set it uses this userID
      *
      * @return array - Array with the teaser image path and the thumbnail paths
      *               ['imagePath'] => teaserImgPath, ['imageThumbnailPath] => ['small'] => path, ['medium'] => path,
-     *               ['large'] => path
+     * ['large'] => path
      * @throws Exception - If the given file is not an image
      */
-    private function createTeaserImage($image)
+    private function createTeaserImage($image, $galleryID = NULL, $userID = NULL)
     {
         $info = getimagesize($image['tmp_name']);
         if ($info[2] == IMAGETYPE_GIF)
             throw new Exception('Teaser image can\'t be a GIF, it has to be a JPEG or a PNG!');
 
-        $galleryID = $this->getNextGalleryId();
-        $userID    = $_SESSION['userId'];
+        $galleryID = ($galleryID !== NULL) ? $galleryID : $this->getNextGalleryId();
+        $userID    = ($userID !== NULL) ? $userID : $_SESSION['userId'];
 
         $folderPath = '/data/media/gallery/' . $userID . DIRECTORY_SEPARATOR . $galleryID . DIRECTORY_SEPARATOR;
         $imageName  = 'teaserImage';
@@ -233,18 +258,48 @@ class Gallery
     /**
      * Updates a gallery
      *
-     * @param array $request - New gallery data  must contain: id : int, status : boolean, name : string, description :
+     * @param array $data    - New gallery data  must contain: id : int, status : boolean, name : string, description :
      *                       string and modifiedDate : string (will be change to timestamp in the future)
      */
-    function editGallery($request)
+    function editGallery($data)
     {
-        $id           = htmlentities($request['id']);
-        $status       = htmlentities($request['status']);
-        $name         = htmlentities($request['name']);
-        $description  = htmlentities($request['description']);
-        $modifiedDate = $request['modifiedDate'];
-        $sth          = $GLOBALS['db']->prepare('UPDATE gallery SET status=\'' . $status . '\', name=\'' . $name . '\', description=\'' . $description . '\', modifiedDate=\'' . $modifiedDate . '\' WHERE id=' . $id);
-        $sth->execute();
+        $ID           = htmlentities($data['id']);
+        $status       = $data['status'];
+        $name         = htmlentities($data['name']);
+        $description  = htmlentities($data['description']);
+        $modifiedDate = $data['modifiedDate'];
+
+        if ($data['image'] !== NULL) {
+            $this->checkImage($data['image']);
+            $teaserImage = $this->createTeaserImage($data['image'], $ID);
+
+            $teaserImagePath      = $teaserImage['imagePath'];
+            $teaserImageThumbnail = $teaserImage['imageThumbnailPath'];
+
+            $sth      = $GLOBALS['db']->prepare('UPDATE gallery SET status=:status,name=:name,description=:description,modifiedDate=:modifiedDate,teaserImage=:teaserImage,teaserImageThumbnail1=:teaserImageThumbnail1,teaserImageThumbnail2=:teaserImageThumbnail2,teaserImageThumbnail3=:teaserImageThumbnail3 WHERE id=:ID');
+            $bindings = [
+                ':status'                => $status,
+                ':name'                  => $name,
+                ':description'           => $description,
+                ':modifiedDate'          => $modifiedDate,
+                ':teaserImage'           => $teaserImagePath,
+                ':teaserImageThumbnail1' => $teaserImageThumbnail['small'],
+                ':teaserImageThumbnail2' => $teaserImageThumbnail['medium'],
+                ':teaserImageThumbnail3' => $teaserImageThumbnail['large'],
+                ':ID'                    => $ID,
+            ];
+        } else {
+            $sth      = $GLOBALS['db']->prepare('UPDATE gallery SET status=:status,name=:name,description=:description,modifiedDate=:modifiedDate WHERE id=:ID');
+            $bindings = [
+                ':status'       => $status,
+                ':name'         => $name,
+                ':description'  => $description,
+                ':modifiedDate' => $modifiedDate,
+                ':ID'           => $ID,
+            ];
+
+        }
+        $sth->execute($bindings);
     }
 
     /**

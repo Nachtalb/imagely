@@ -15,40 +15,44 @@
 <script type="text/javascript" src="{PATH_OFFSET}/lib/trix/trix.js"></script>
 <!-- Main Content -->
 <div class="container">
+    {TXT_INFO}
     <div class="row">
         <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
             <form action="{PATH_OFFSET}/{LANGUAGE}/DoEditGallery/{TXT_EDIT_ID}" method="post"
                   enctype="multipart/form-data"
                   class="form-horizontal">
                 <div class="form-group">
-                    <label for="inputTitle" class="col-sm-2 control-label">{TXT_IMAGELY_EDIT_NAME}</label>
+                    <label for="inputTitle" class="control-label">
+                        {TXT_IMAGELY_EDIT_NAME}
+                    </label>
 
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="inputTitle" name="title"
+                        <input type="text" class="form-control" id="inputTitle" name="name"
                                placeholder="{TXT_IMAGELY_EDIT_NAME}" value="{TXT_EDIT_NAME}">
-                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="inputContent" class="col-sm-2 control-label">{TXT_IMAGELY_EDIT_DESCRIPTION}</label>
+                    <label for="inputContent" class="control-label">
+                        {TXT_IMAGELY_EDIT_DESCRIPTION}
+                    </label>
+                    <span class="help-block">
+                        <span class="remaining">500</span> characters remaining.
+                    </span>
 
-                    <div class="col-sm-10">
-                        <input type="hidden" id="inputContent" name="content" value="{TXT_EDIT_DESCRIPTION}">
-                        <trix-editor class="form-control" input="inputContent"
-                                     placeholder="{TXT_IMAGELY_EDIT_DESCRIPTION}"
-                        </trix-editor>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="inputImage" class="col-sm-2 control-label">{TXT_IMAGELY_EDIT_IMAGE}</label>
 
-                    <div class="col-sm-10">
-                        <input class="form-control" id="inputImage" name="image" type="file">
-                    </div>
+                    <input type="hidden" id="inputContent" name="description" value="{TXT_EDIT_DESCRIPTION}">
+                    <trix-editor data-maxlength="500" class="form-control" input="inputContent"
+                                 placeholder="{TXT_IMAGELY_EDIT_DESCRIPTION}">
+                    </trix-editor>
+
                 </div>
                 <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-default">{TXT_IMAGELY_EDIT_EDIT}</button>
-                    </div>
+                    <label for="inputImage" class="control-label">
+                        {TXT_IMAGELY_EDIT_IMAGE}
+                    </label>
+
+                    <input class="form-control" id="inputImage" name="image" type="file">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">{TXT_IMAGELY_EDIT_EDIT}</button>
                 </div>
             </form>
         </div>

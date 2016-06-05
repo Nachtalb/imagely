@@ -120,7 +120,7 @@ class Imagely
         $urlParts = explode('/', $_GET['__cap']);
 
         //Set requestedLanguage
-        if (!isset($urlParts[1]) || $urlParts[1] == 'index.php' || $urlParts[1] == '' || !in_array($urlParts[1], $availableLanguages, TRUE))
+        if (!isset($urlParts[1]) || $urlParts[1] == 'index.php' || $urlParts[1] == '' || $urlParts[2] == '' || !in_array($urlParts[1], $availableLanguages, TRUE))
             $this->redirectTo($availableTemplates[0], NULL);
         else
             $requestedLanguage = $urlParts[1];
@@ -149,7 +149,7 @@ class Imagely
                 $galleries = $this->gallery->getAll();
                 foreach ($galleries as $item) {
                     $entry   = file_get_contents(DOCUMENT_ROOT . '/template/home_entry.html');
-                    $entry   = str_replace('{GALLERY_LINK_HREF}', 'Detail/' . $item['id'], $entry);
+                    $entry   = str_replace('{GALLERY_LINK_HREF}', '/' . $requestedLanguage . '/Detail/' . $item['id'], $entry);
                     $entry   = str_replace('{TXT_GALLERY_NAME}', $item['name'], $entry);
                     $entry   = str_replace('{TXT_GALLERY_DESCRIPTION}', $item['description'], $entry);
                     $entry   = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById($item['author']), $entry);
@@ -166,8 +166,8 @@ class Imagely
                 $users           = $this->user->getAll();
                 foreach ($users as $key => $item) {
                     $entry           = file_get_contents(DOCUMENT_ROOT . '/template/account_entry.html');
-                    $entry           = str_replace('{ACCOUNT_DELETE_HREF}', 'DoDeleteAccount/' . $item['id'], $entry);
-                    $entry           = str_replace('{ACCOUNT_EDIT_HREF}', 'EditAccount/' . $item['id'], $entry);
+                    $entry           = str_replace('{ACCOUNT_DELETE_HREF}', '/' . $requestedLanguage . '/DoDeleteAccount/' . $item['id'], $entry);
+                    $entry           = str_replace('{ACCOUNT_EDIT_HREF}', '/' . $requestedLanguage . '/EditAccount/' . $item['id'], $entry);
                     $entry           = str_replace('{TXT_ACCOUNT_NAME}', $item['name'], $entry);
                     $isAdminTxt      = $item['isAdmin'] == 1 ? $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_TRUE'] : $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_FALSE'];
                     $entry           = str_replace('{TXT_ACCOUNT_ISADMIN}', $isAdminTxt, $entry);
@@ -178,9 +178,9 @@ class Imagely
                 $galleries        = $this->gallery->getAll();
                 foreach ($galleries as $key => $item) {
                     $entry            = file_get_contents(DOCUMENT_ROOT . '/template/gallery_entry.html');
-                    $entry            = str_replace('{GALLERIES_EDIT_HREF}', 'Edit/' . $item['id'], $entry);
-                    $entry            = str_replace('{GALLERIES_LINK_HREF}', 'Detail/' . $item['id'], $entry);
-                    $entry            = str_replace('{GALLERIES_DELETE_HREF}', 'DoDeleteGallery/' . $item['id'], $entry);
+                    $entry            = str_replace('{GALLERIES_EDIT_HREF}', '/' . $requestedLanguage . '/Edit/' . $item['id'], $entry);
+                    $entry            = str_replace('{GALLERIES_LINK_HREF}', '/' . $requestedLanguage . '/Detail/' . $item['id'], $entry);
+                    $entry            = str_replace('{GALLERIES_DELETE_HREF}', '/' . $requestedLanguage . '/DoDeleteGallery/' . $item['id'], $entry);
                     $entry            = str_replace('{TXT_GALLERIES_NAME}', $item['name'], $entry);
                     $entry            = str_replace('{TXT_GALLERIES_DESCRIPTION}', $item['description'], $entry);
                     $entry            = str_replace('{TXT_GALLERIES_MODIFIED}', $item['modifiedDate'], $entry);
@@ -188,13 +188,14 @@ class Imagely
                 }
                 $page = str_replace('{GALLERY_ENTRIES}', $contentGalleries, $page);
                 break;
-            case 'Account':
+            case
+                'Account':
                 Imagely::checkSessionRedirect($defaultSite);
                 $content    = NULL;
                 $user       = $this->user->getUserById($_SESSION['userId']);
                 $entry      = file_get_contents(DOCUMENT_ROOT . '/template/account_entry.html');
-                $entry      = str_replace('{ACCOUNT_DELETE_HREF}', 'DoDeleteAccount/' . $user['id'], $entry);
-                $entry      = str_replace('{ACCOUNT_EDIT_HREF}', 'EditAccount/' . $user['id'], $entry);
+                $entry      = str_replace('{ACCOUNT_DELETE_HREF}', '/' . $requestedLanguage . '/DoDeleteAccount/' . $user['id'], $entry);
+                $entry      = str_replace('{ACCOUNT_EDIT_HREF}', '/' . $requestedLanguage . '/EditAccount/' . $user['id'], $entry);
                 $entry      = str_replace('{TXT_ACCOUNT_NAME}', $user['name'], $entry);
                 $isAdminTxt = $user['isAdmin'] == 1 ? $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_TRUE'] : $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_FALSE'];
                 $entry      = str_replace('{TXT_ACCOUNT_ISADMIN}', $isAdminTxt, $entry);
@@ -371,18 +372,42 @@ class Imagely
             case 'DoEditGallery':
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
-                if (isset($_POST)) {
-                    $request                 = [];
+
+                if ((isset($_POST['name']) && $_POST['name'] != '') &&
+                    (isset($_POST['description']) && $_POST['description'] != '' && count(strip_tags($_POST['description'])) <= 500)
+                ) {
                     $request['id']           = $requestedParameter;
+                    $request['author']       = $_SESSION['userId'];
                     $request['name']         = $_POST['name'];
+                    $request['status']       = TRUE;
                     $request['description']  = $_POST['description'];
-                    $request['modifiedDate'] = date('Y-m-d h:i:s');
-                    $_POST                   = [];
+                    $request['modifiedDate'] = time();
+                    $request['image']        = (isset($_FILES['image']) && $_FILES['image']['name'] != '') ? $_FILES['image'] : NULL;
 
-                    $this->gallery->editGallery($request);
+                    $_POST  = [];
+                    $_FILES = [];
 
-                    header('Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[12]);
+                    try {
+                        $this->gallery->editGallery($request);
+                    } catch (Exception $e) {
+                        $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                            $e->getMessage() .
+                            '</div></div></div>';
+                        $this->redirectTo('Edit', $requestedLanguage, $requestedParameter);
+                    }
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-info">' .
+                        'Your gallery has been updated.' .
+                        '</div></div></div>';
+                    $this->redirectTo('Galleries');
+                } else if (count(strip_tags($_POST['description'])) > 500) {
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                        'Description has a maximum of 500 characters!' .
+                        '</div></div></div>';
                 }
+                $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                    'Please fill all fields!' .
+                    '</div></div></div>';
+                $this->redirectTo('Edit', $requestedLanguage, $requestedParameter);
                 break;
             case 'Edit':
                 Imagely::checkSessionRedirect($defaultSite);
@@ -402,9 +427,9 @@ class Imagely
                 $galleries = $this->gallery->getAllByAuthor($_SESSION['userId']);
                 foreach ($galleries as $key => $item) {
                     $entry   = file_get_contents(DOCUMENT_ROOT . '/template/gallery_entry.html');
-                    $entry   = str_replace('{GALLERIES_EDIT_HREF}', 'Edit/' . $item['id'], $entry);
-                    $entry   = str_replace('{GALLERIES_LINK_HREF}', 'Detail/' . $item['id'], $entry);
-                    $entry   = str_replace('{GALLERIES_DELETE_HREF}', 'DoDeleteGallery/' . $item['id'], $entry);
+                    $entry   = str_replace('{GALLERIES_EDIT_HREF}', '/' . $requestedLanguage . '/Edit/' . $item['id'], $entry);
+                    $entry   = str_replace('{GALLERIES_LINK_HREF}', '/' . $requestedLanguage . '/Detail/' . $item['id'], $entry);
+                    $entry   = str_replace('{GALLERIES_DELETE_HREF}', '/' . $requestedLanguage . '//DoDeleteGallery/' . $item['id'], $entry);
                     $entry   = str_replace('{TXT_GALLERIES_NAME}', $item['name'], $entry);
                     $entry   = str_replace('{TXT_GALLERIES_DESCRIPTION}', $item['description'], $entry);
                     $entry   = str_replace('{TXT_GALLERIES_MODIFIED}', $item['modifiedDate'], $entry);
@@ -484,30 +509,31 @@ class Imagely
     /**
      * Redirect to a certain site
      *
-     * @param string $site - Site you want to redirect to
-     * @param string $lang - Language as string
+     * @param string      $site               - Site you want to redirect to
+     * @param string|null $lang               - Language as string
+     * @param string|int  $requestedParameter - Additional Parameter
      */
-    function redirectTo($site, $lang = 'de')
+    function redirectTo($site, $lang = NULL, $requestedParameter = '')
     {
         $availableTemplates = $this->template->getAvailableSites();
         $availableLanguages = $this->language->getAvailableLanguages();
         if (isset($lang) && $lang != NULL && in_array($lang, $availableLanguages, TRUE)) {
             if (in_array($site, $availableTemplates, TRUE))
-                $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $lang . '/' . $site;
+                $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $lang . '/' . $site . '/' . $requestedParameter;
             else
-                $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $lang . '/' . $availableTemplates[0];
+                $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $lang . '/' . $availableTemplates[0] . '/' . $requestedParameter;
         } else {
             $browserLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
             if (in_array($browserLanguage, $availableLanguages, TRUE)) {
                 if (in_array($site, $availableTemplates, TRUE))
-                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $browserLanguage . '/' . $site;
+                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $browserLanguage . '/' . $site . '/' . $requestedParameter;
                 else
-                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $browserLanguage . '/' . $availableTemplates[0];
+                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $browserLanguage . '/' . $availableTemplates[0] . '/' . $requestedParameter;
             } else {
                 if (in_array($site, $availableTemplates, TRUE))
-                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $GLOBALS['DEFAULTS']['LANG'] . '/' . $site;
+                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $GLOBALS['DEFAULTS']['LANG'] . '/' . $site . '/' . $requestedParameter;
                 else
-                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $GLOBALS['DEFAULTS']['LANG'] . '/' . $availableTemplates[0];
+                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $GLOBALS['DEFAULTS']['LANG'] . '/' . $availableTemplates[0] . '/' . $requestedParameter;
             }
 
         }
