@@ -26,24 +26,30 @@
 
 
                     <input type="text" class="form-control" id="inputTitle" name="name"
-                           placeholder="{TXT_IMAGELY_CREATE_NAME}">
+                           placeholder="{TXT_IMAGELY_CREATE_NAME}" value="{TXT_GALLERY_NAME_VALUE}">
 
                 </div>
                 <div class="form-group">
                     <label for="inputContent" class="control-label">
                         {TXT_IMAGELY_CREATE_DESCRIPTION}
                     </label>
+                    <span class="help-block">
+                        <span class="remaining">500</span> characters remaining.
+                    </span>
 
+                    <input type="hidden" id="inputContent" name="description" value="{TXT_GALLERY_DESC_VALUE}">
+                    <trix-editor data-maxlength="500" class="form-control" input="inputContent"
+                                 placeholder="{TXT_IMAGELY_CREATE_DESCRIPTION}">
+                        {TXT_GALLERY_DESC_VALUE}
+                    </trix-editor>
 
-                    <input type="hidden" id="inputContent" name="description">
-                    <trix-editor class="form-control" input="inputContent"
-                                 placeholder="{TXT_IMAGELY_CREATE_DESCRIPTION}"></trix-editor>
 
                 </div>
                 <div class="form-group">
                     <label for="inputImage" class="control-label">
                         {TXT_IMAGELY_CREATE_IMAGE}
                     </label>
+                    <span class="help-block">Use a Image around HD quality</span>
 
                     <input class="form-control" id="inputImage" name="image" type="file">
 

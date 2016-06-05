@@ -8,7 +8,7 @@ $(document).ready(function () {
     function removeStatus(id) {
         $('#' + id + 'Status').remove();
     }
-
+    
     //if is empty status message vars
     var statusUsernameEmpty = false; //boolean for UsernameEmpty status message
     var statusPasswordEmpty = false; //boolean for PasswordEmpty status message

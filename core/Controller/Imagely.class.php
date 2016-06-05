@@ -267,12 +267,22 @@ class Imagely
                 $page = str_replace('{TXT_GALLERY_DATE}', $galleryArr['creationDate'], $page);
                 $page = str_replace('{TXT_GALLERY_NAME}', $galleryArr['name'], $page);
                 $page = str_replace('{TXT_GALLERY_DESCRIPTION}', $galleryArr['description'], $page);
+                $page = str_replace('{GALLERY_TEASER_IMG}', $galleryArr['teaserImage'], $page);
+
+                $avg_lum = $this->gallery->get_avg_luminance($galleryArr['teaserImage']);
+                if ($avg_lum > 170) {
+                    $page = str_replace('{TXT_CLASS_TEXT_COLOUR}', 'dark', $page);
+                    $page = str_replace('{TXT_CLASS_NAV_COLOUR}', 'navbar-inverse', $page);
+                }
+
+
                 break;
             case 'DoCreateGallery':
                 Imagely::checkSessionRedirect($defaultSite);
                 if ((isset($_POST['name']) && $_POST['name'] != '') &&
-                    (isset($_POST['description']) && $_POST['description'] != '') &&
-                    isset($_FILES['image'])) {
+                    (isset($_POST['description']) && $_POST['description'] != '' && count(strip_tags($_POST['description'])) <= 500) &&
+                    isset($_FILES['image'])
+                ) {
                     $request['author']       = $_SESSION['userId'];
                     $request['name']         = $_POST['name'];
                     $request['status']       = TRUE;
@@ -287,6 +297,9 @@ class Imagely
                     try {
                         $this->gallery->createGallery($request);
                     } catch (Exception $e) {
+                        $_SESSION['SESSION_VARS']['TXT_GALLERY_NAME_VALUE'] = $request['name'];
+                        $_SESSION['SESSION_VARS']['TXT_GALLERY_DESC_VALUE'] = $request['description'];
+
                         $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
                             $e->getMessage() .
                             '</div></div></div>';
@@ -296,10 +309,16 @@ class Imagely
                         'Your gallery has been created.' .
                         '</div></div></div>';
                     $this->redirectTo('Home', $requestedLanguage);
+                } else if (count(strip_tags($_POST['description'])) > 500) {
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                        'Description has a maximum of 500 characters!' .
+                        '</div></div></div>';
                 }
-                $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                $_SESSION['SESSION_VARS']['TXT_INFO']               = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
                     'Please fill all fields!' .
                     '</div></div></div>';
+                $_SESSION['SESSION_VARS']['TXT_GALLERY_NAME_VALUE'] = $_POST['name'];
+                $_SESSION['SESSION_VARS']['TXT_GALLERY_DESC_VALUE'] = $_POST['description'];
                 $this->redirectTo('Create', $requestedLanguage);
 
                 break;
@@ -403,7 +422,7 @@ class Imagely
 
         foreach ($_SESSION['SESSION_VARS'] as $key => $item) {
             $page = str_replace('{' . $key . '}', $item, $page);
-            unset($_SESSION['SESSION_VARS'][$key]);
+            unset($_SESSION['SESSION_VARS'][ $key ]);
         }
 
         //Replace placeholder through requestedLanguage

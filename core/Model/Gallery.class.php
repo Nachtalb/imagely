@@ -23,6 +23,16 @@ class Gallery
         $result = $sth->fetchAll();
         $return = json_decode(json_encode($result), TRUE);
 
+
+        for ($i = 0 ; $i < count($return) ; $i++) {
+            $return[ $i ]['description'] = html_entity_decode($return[ $i ]['description']);
+
+            $date = new DateTime();
+            $date->setTimestamp($return[ $i ]['creationDate']);
+            $return[ $i ]['creationDate'] = $date->format('d.m.Y H:i');
+        }
+
+
         return $return;
     }
 
@@ -106,16 +116,17 @@ class Gallery
         if ($info[2] == IMAGETYPE_GIF)
             throw new Exception('Teaser image can\'t be a GIF, it has to be a JPEG or a PNG!');
 
-        $galleryID  = $this->getNextGalleryId();
-        $userID     = $_SESSION['userId'];
-        $folderPath = DOCUMENT_ROOT . '/data/media/gallery/' . $userID . DIRECTORY_SEPARATOR . $galleryID . DIRECTORY_SEPARATOR;
+        $galleryID = $this->getNextGalleryId();
+        $userID    = $_SESSION['userId'];
+
+        $folderPath = '/data/media/gallery/' . $userID . DIRECTORY_SEPARATOR . $galleryID . DIRECTORY_SEPARATOR;
         $imageName  = 'teaserImage';
 
         $finalImagePaht = $folderPath . $imageName . '.png';
-        if (!is_dir($folderPath))
-            mkdir($folderPath, 0755, TRUE);
+        if (!is_dir(DOCUMENT_ROOT . $folderPath))
+            mkdir(DOCUMENT_ROOT . $folderPath, 0755, TRUE);
 
-        imagepng(imagecreatefromstring(file_get_contents($image['tmp_name'])), $finalImagePaht);
+        imagepng(imagecreatefromstring(file_get_contents($image['tmp_name'])), DOCUMENT_ROOT . $finalImagePaht);
         $thumnail = $this->createThumbnail($finalImagePaht, $imageName, $folderPath);
 
         $result = [
@@ -145,7 +156,7 @@ class Gallery
     {
         $result = [];
 
-        $imageInfo = getimagesize($image);
+        $imageInfo = getimagesize(DOCUMENT_ROOT . $image);
         $width     = $imageInfo[0];
         $height    = $imageInfo[1];
 
@@ -163,11 +174,12 @@ class Gallery
             $type               = image_type_to_extension($type);
             $getResourceOfImage = 'imagecreatefrom' . $type;
             $getResourceOfImage = str_replace('.', '', $getResourceOfImage);
-            $img                = $getResourceOfImage($image);
+            $img                = $getResourceOfImage(DOCUMENT_ROOT . $image);
             $tmp_img            = imagecreatetruecolor($new_width, $new_thumb_height);
             imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_thumb_height, $width, $height);
 
-            imagepng($tmp_img, "{$path}{$thumbname}");
+            $new_path = DOCUMENT_ROOT . $path;
+            imagepng($tmp_img, "{$new_path}{$thumbname}");
 
             $result[ $sizeName ] = $path . $thumbname;
         }
@@ -242,6 +254,10 @@ class Gallery
         $return                = json_decode(json_encode($sth->fetch()), TRUE);
         $return['description'] = html_entity_decode($return['description']);
 
+        $date = new DateTime();
+        $date->setTimestamp($return['creationDate']);
+        $return['creationDate'] = $date->format('d-m-Y H:i');
+
         return $return;
     }
 
@@ -287,5 +303,46 @@ class Gallery
 
         return FALSE;
     }
+
+    public function get_avg_luminance($filename, $num_samples = 10)
+    {
+        $img = imagecreatefrompng(DOCUMENT_ROOT . $filename);
+
+        $width  = imagesx($img);
+        $height = imagesy($img);
+
+        $x_step = intval($width / $num_samples);
+        $y_step = intval($height / $num_samples);
+
+        $total_lum = 0;
+
+        $sample_no = 1;
+
+        for ($x = 0 ; $x < $width ; $x += $x_step) {
+            for ($y = 0 ; $y < $height ; $y += $y_step) {
+
+                $rgb = imagecolorat($img, $x, $y);
+                $r   = ($rgb >> 16) & 0xFF;
+                $g   = ($rgb >> 8) & 0xFF;
+                $b   = $rgb & 0xFF;
+
+                // choose a simple luminance formula from here
+                // http://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
+                $lum = ($r + $r + $b + $g + $g + $g) / 6;
+
+                $total_lum += $lum;
+
+                // debugging code
+                //           echo "$sample_no - XY: $x,$y = $r, $g, $b = $lum<br />";
+                $sample_no++;
+            }
+        }
+
+        // work out the average
+        $avg_lum = $total_lum / $sample_no;
+
+        return $avg_lum;
+    }
+
 
 }
