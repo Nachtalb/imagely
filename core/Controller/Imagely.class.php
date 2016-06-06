@@ -11,21 +11,6 @@ class Imagely
 {
 
     /**
-     * ArrayList with all possible actions
-     *
-     * @var array
-     */
-    private $availableActions = [
-        'DoLogin',
-        'DoSignup',
-        'DoDeleteAccount',
-        'DoEditAccount',
-        'DoCreateGallery',
-        'DoDeleteGallery',
-        'DoEditGallery',
-
-    ];
-    /**
      * Language object
      *
      * @var Language
