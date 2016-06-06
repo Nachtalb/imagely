@@ -513,32 +513,29 @@ class Imagely
      * @param string|null $lang               - Language as string
      * @param string|int  $requestedParameter - Additional Parameter
      */
-    function redirectTo(string $site, int $lang = NULL, int $requestedParameter = '')
+    function redirectTo(string $site, string $lang = NULL, int $requestedParameter = NULL)
     {
         $availableTemplates = $this->template->getAvailableSites();
         $availableLanguages = $this->language->getAvailableLanguages();
-        if (isset($lang) && $lang != NULL && in_array($lang, $availableLanguages, TRUE)) {
-            if (in_array($site, $availableTemplates, TRUE))
-                $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $lang . '/' . $site . '/' . $requestedParameter;
-            else
-                $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $lang . '/' . $availableTemplates[0] . '/' . $requestedParameter;
-        } else {
-            $browserLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-            if (in_array($browserLanguage, $availableLanguages, TRUE)) {
-                if (in_array($site, $availableTemplates, TRUE))
-                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $browserLanguage . '/' . $site . '/' . $requestedParameter;
-                else
-                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $browserLanguage . '/' . $availableTemplates[0] . '/' . $requestedParameter;
-            } else {
-                if (in_array($site, $availableTemplates, TRUE))
-                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $GLOBALS['DEFAULTS']['LANG'] . '/' . $site . '/' . $requestedParameter;
-                else
-                    $redirect = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $GLOBALS['DEFAULTS']['LANG'] . '/' . $availableTemplates[0] . '/' . $requestedParameter;
-            }
+        $requestedParameter = trim(($requestedParameter != NULL) ? $requestedParameter : '');
+        $site               = trim(($site != NULL && in_array($site, $availableTemplates, TRUE)) ? $site : 'home');
+        $lang               = trim(($lang != NULL && in_array($lang, $availableLanguages, TRUE)) ? $lang : $GLOBALS['CONFIG']['LANG']);
 
-        }
+        $location = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/:lang/:site/:requestParameter';
+        $needle   = [
+            ':lang',
+            ':site',
+            ':requestParameter'
+        ];
+        $replace  = [
+            $lang,
+            $site,
+            $requestedParameter
+        ];
 
-        header($redirect);
+        $location = str_replace($needle, $replace, $location);
+
+        header($location);
         die();
     }
 
