@@ -45,13 +45,66 @@ class Image
     }
 
     /**
-     * generates 3 different sizes of thumbnails
+     * Generates 3 different sizes of thumbnails 100px, 200px & 400px height
      *
-     * @param string $imagePath - path to to original image
+     * @param string $image - Path to picture from which the thumbs should be created
+     * @param string $path  - Folder in which the thumbnails will be saved
+     *
+     * @return mixed - False if the given image does not exist otherwise an array with the 3 different sizes of thumbnails:
+     *               small => path, medium => path, large => path
      */
-    function createThumbnail($imagePath)
+    public static function createThumbnail(string $image, string $initialPath = NULL)
     {
-        //TODO write this function
+        $root = dirname(dirname(__DIR__) . '../');
+
+        $imagePath = $root . ((substr($image, 0, 1) == '/' || substr($image, 0, 1) == '\\') ? '' : DIRECTORY_SEPARATOR) . $image;
+        if ($initialPath !== NULL) {
+            $possibleSlashStart = (substr($initialPath, 0, 1) == '/' || substr($initialPath, 0, 1) == '\\') ? '' : DIRECTORY_SEPARATOR;
+            $possibleSlashEnd   = (substr($initialPath, count($initialPath) - 1) == '/' || substr($initialPath, count($initialPath) - 1) == '\\') ? '' : DIRECTORY_SEPARATOR;
+            $initialPath        = $possibleSlashStart . $initialPath . $possibleSlashEnd;
+            $path               = $root . $initialPath;
+        } else {
+            $path        = dirname($imagePath) . DIRECTORY_SEPARATOR;
+            $initialPath = str_replace($root, '', $path);
+        }
+
+        if (!is_dir($path))
+            mkdir($path, 0755, TRUE);
+        elseif (!file_exists($imagePath))
+            return false;
+
+        $name = basename($image);
+
+        $result = [];
+
+        $imageInfo = getimagesize($imagePath);
+        $width     = $imageInfo[0];
+        $height    = $imageInfo[1];
+
+        $new_height = [
+            'small'  => 100,
+            'medium' => 200,
+            'large'  => 400,
+        ];
+        foreach ($new_height as $sizeName => $new_thumb_height) {
+            $thumbname = $name . '.' . $sizeName . '.thumb.png';
+            $new_width = floor($width * ($new_thumb_height / $height));
+
+            list(, , $type) = $imageInfo;
+
+            $type               = image_type_to_extension($type);
+            $getResourceOfImage = 'imagecreatefrom' . $type;
+            $getResourceOfImage = str_replace('.', '', $getResourceOfImage);
+            $img                = $getResourceOfImage($imagePath);
+            $tmp_img            = imagecreatetruecolor($new_width, $new_thumb_height);
+            imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_thumb_height, $width, $height);
+
+            imagepng($tmp_img, "{$path}{$thumbname}");
+
+            $result[ $sizeName ] = $initialPath . $thumbname;
+        }
+
+        return $result;
     }
 
     /**

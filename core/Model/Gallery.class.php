@@ -162,7 +162,7 @@ class Gallery
             mkdir(DOCUMENT_ROOT . $folderPath, 0755, TRUE);
 
         imagepng(imagecreatefromstring(file_get_contents($image['tmp_name'])), DOCUMENT_ROOT . $finalImagePaht);
-        $thumnail = $this->createThumbnail($finalImagePaht, $imageName, $folderPath);
+        $thumnail = Image::createThumbnail($finalImagePaht);
 
         $result = [
             'imagePath'          => $finalImagePaht,
@@ -194,52 +194,7 @@ class Gallery
 
         return TRUE;
     }
-
-    /**
-     * Generates 3 different sizes of thumbnails 100px, 200px & 400px height
-     *
-     * @param string $image - Path to picture from which the thumbs should be created
-     * @param string $name  - name of hte picture
-     * @param string $path  - path to save the pictures
-     *
-     * @return array - Array with the 3 different sizes of thumbnails:
-     *               small => path, medium => path, large => path
-     */
-    private function createThumbnail(string $image, string $name, string $path)
-    {
-        $result = [];
-
-        $imageInfo = getimagesize(DOCUMENT_ROOT . $image);
-        $width     = $imageInfo[0];
-        $height    = $imageInfo[1];
-
-        $new_height = [
-            'small'  => 100,
-            'medium' => 200,
-            'large'  => 400,
-        ];
-        foreach ($new_height as $sizeName => $new_thumb_height) {
-            $thumbname = $name . '.' . $sizeName . '.thumb.png';
-            $new_width = floor($width * ($new_thumb_height / $height));
-
-            list(, , $type) = $imageInfo;
-
-            $type               = image_type_to_extension($type);
-            $getResourceOfImage = 'imagecreatefrom' . $type;
-            $getResourceOfImage = str_replace('.', '', $getResourceOfImage);
-            $img                = $getResourceOfImage(DOCUMENT_ROOT . $image);
-            $tmp_img            = imagecreatetruecolor($new_width, $new_thumb_height);
-            imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_thumb_height, $width, $height);
-
-            $new_path = DOCUMENT_ROOT . $path;
-            imagepng($tmp_img, "{$new_path}{$thumbname}");
-
-            $result[ $sizeName ] = $path . $thumbname;
-        }
-
-        return $result;
-    }
-
+    
     /**
      * Gets the number of the next gallery which will be created
      *
