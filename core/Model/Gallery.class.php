@@ -348,6 +348,30 @@ class Gallery
     }
 
     /**
+     * Check if given user id matches with the given id or if the user is an admin
+     *
+     * @param int $userID    - ID of the user
+     * @param int $galleryID - ID of the gallery
+     *
+     * @return bool
+     */
+    public function checkIfOwnerOrAdmin(int $userID, int $galleryID)
+    {
+        $return = [];
+        $sth    = $GLOBALS['db']->prepare('SELECT author FROM gallery WHERE id=:galleryID');
+        $sth->bindValue(':galleryID', $galleryID);
+        $sth->execute();
+        while ($result = json_decode(json_encode($sth->fetch()), TRUE)) {
+            $return[] = (string)$result['id'];
+        }
+        if (in_array($galleryID, $return, TRUE) || User::isAdmin($userID) == 1) {
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
+    /**
      * Get average luminance of an image to determine if it's dark or light
      * Function from here: http://stackoverflow.com/a/5959461/5699307
      *

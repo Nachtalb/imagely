@@ -62,6 +62,15 @@ $lang['TXT_IMAGELY_CREATE_PICTURE']            = "You have to uploaf JPEG or a P
 $lang['TXT_IMAGELY_CREATE_ALL_FIELDS']         = "You have to fill out all fields.";
 $lang['TXT_IMAGELY_CREATE_DESCRIPTION_LENGTH'] = "The description has a max of 500 characters..";
 
+//Image
+$lang['TXT_IMAGELY_IMAGE_HEADING']      = "Upload Images";
+$lang['TXT_IMAGELY_IMAGE_IMAGE']        = "Images";
+$lang['TXT_IMAGELY_IMAGE_IMAGE_BUTTON'] = "Choose images...";
+$lang['TXT_IMAGELY_IMAGE_CREATE']       = "Upload files";
+$lang['TXT_IMAGELY_IMAGE_CREATED']      = "Your images were uploaded.";
+$lang['TXT_IMAGELY_IMAGE_PICTURE']      = "You have to upload JPEGs, PNGs or GIFs.";
+$lang['TXT_IMAGELY_IMAGE_ALL_FIELDS']   = "You have to upload at leas one image.";
+
 //Galleries
 $lang['TXT_IMAGELY_GALLERIES_HEADING']  = "My galleries";
 $lang['TXT_IMAGELY_GALLERIES_MODIFIED'] = "Last modified:";

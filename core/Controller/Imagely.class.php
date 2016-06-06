@@ -255,6 +255,19 @@ class Imagely
                 $galleryArr = $this->gallery->getGalleryById($requestedParameter);
                 $images     = $this->gallery->getImageByGalleryId($requestedParameter);
 
+                if (isset($_SESSION['userId'])) {
+                    $owner = $this->gallery->checkIfOwnerOrAdmin($_SESSION['userId'], $requestedParameter);
+
+                    if (isset($owner) && $owner) {
+                        $addImageCode = '<a class="btn btn-block btn-default" href="/' . $requestedLanguage . '/Image/' . $requestedParameter . '"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;{TXT_IMAGELY_GALLERY_ADD_IMAGE}</a>';
+                        $page         = str_replace('{GALLERY_ADD_IMAGES}', $addImageCode, $page);
+                    }
+                }
+                if (empty($images)) {
+                    $noImagesCode = '<div class="alert alert-info text-center"><p>{TXT_IMAGELY_GALLERY_NO_IMAGES}</p></div>';
+                    $page         = str_replace('{GALLERY_NO_IMAGES}', $noImagesCode, $page);
+                }
+
                 $page = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById($galleryArr['author']), $page);
                 $page = str_replace('{TXT_GALLERY_DATE}', $galleryArr['creationDate'], $page);
                 $page = str_replace('{TXT_GALLERY_NAME}', $galleryArr['name'], $page);

@@ -49,6 +49,16 @@ class Template
             // 14
             'Edit',
             // 15
+            'Image',
+            // 16
+            'DoCreateImage',
+            // 17
+            'DoDeleteImage',
+            // 18
+            'EditImage',
+            // 19
+            'DoEditImage',
+            // 20
         ];
 
         return $availableTemplates;
