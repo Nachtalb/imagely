@@ -194,7 +194,7 @@ class Gallery
 
         return TRUE;
     }
-    
+
     /**
      * Gets the number of the next gallery which will be created
      *
@@ -395,6 +395,4 @@ class Gallery
 
         return $avg_lum;
     }
-
-
 }

@@ -237,6 +237,7 @@ class Imagely
                 }
                 break;
             case 'DoSignup':
+                //todo: test me
                 if (isset($_POST)) {
                     $id = $this->user->getIdByName('\'' . $_POST['Username'] . '\'');
                     // Dog_12345
@@ -265,6 +266,7 @@ class Imagely
                 Imagely::checkSessionRedirect($defaultSite);
                 break;
             case 'Detail':
+                //ToDo: after DoCreateImage
                 $galleryArr = $this->gallery->getGalleryById($requestedParameter);
                 $images     = $this->gallery->getImageByGalleryId($requestedParameter);
 
@@ -328,6 +330,7 @@ class Imagely
 
                 break;
             case 'DoCreateImage':
+                //todo: DoCreateImage
                 $request              = [];
                 $request['galleryId'] = $requestedParameter;
                 if (isset($_FILES)) {
@@ -345,29 +348,27 @@ class Imagely
                     $targetFile = DOCUMENT_ROOT . $storeFolder . $randomString . '.' . $fileExt;
                     move_uploaded_file($tempFile, $targetFile);
 
-                    //create thumbnail
-                    $this->image->createThumbnail($targetFile);
-
                     $request['imagePath']     = $storeFolder . $randomString . '.' . $fileExt;
                     $request['thumbnailPath'] = $storeFolder . $randomString . '.' . $fileExt . '.thumbnail';
-                    $this->image->referImageInDB($request);
                 }
                 header('Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[15] . '/' . $requestedParameter);
                 break;
             case 'DoDeleteAccount':
+                //todo: DoDeleteAccount
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->user->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $this->user->deleteUserById($requestedParameter);
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
                 break;
             case 'DoEditAccount':
-                //todo: make this work
+                //todo: DoEditAccount
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->user->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $this->user->deleteUserById($requestedParameter);
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
                 break;
             case 'DoDeleteGallery':
+                //todo: DoDeleteGallery
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $this->gallery->deleteGalleryById($requestedParameter);
@@ -414,6 +415,7 @@ class Imagely
                 $this->redirectTo('Edit', $requestedLanguage, $requestedParameter);
                 break;
             case 'Edit':
+                //todo: edit
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $entry = $this->gallery->getGalleryById($requestedParameter);
@@ -454,16 +456,13 @@ class Imagely
             unset($_SESSION['SESSION_VARS'][ $key ]);
         }
 
-        //Replace placeholder through requestedLanguage
         foreach ($languageArray as $key => $item) {
             $page = str_replace('{' . $key . '}', $item, $page);
         }
 
         $page = preg_replace('/{TXT_[A-Z_]+}/', '', $page);
 
-        //return page
         echo $page;
-
     }
 
     /**
@@ -475,9 +474,7 @@ class Imagely
      */
     function checkSessionRedirect($redirect)
     {
-        //Check if username exists in session, to make sure that user is logged in
         if (isset($_SESSION['userId']) && isset($_SESSION['hash'])) {
-            //Get hash from database and check if hash and id in session match, to make sure user is correctly logged in
             $correctHash = $this->user->getHashById($_SESSION['userId']);
             if ($correctHash === $_SESSION['hash'] || $this->user->isAdmin($_SESSION['userId']) === TRUE) {
                 return TRUE;
@@ -515,7 +512,7 @@ class Imagely
      * @param string|null $lang               - Language as string
      * @param string|int  $requestedParameter - Additional Parameter
      */
-    function redirectTo(string $site, string $lang = NULL, int $requestedParameter = NULL)
+    public function redirectTo(string $site, string $lang = NULL, int $requestedParameter = NULL)
     {
         $availableTemplates = $this->template->getAvailableSites();
         $availableLanguages = $this->language->getAvailableLanguages();
@@ -527,12 +524,12 @@ class Imagely
         $needle   = [
             ':lang',
             ':site',
-            ':requestParameter'
+            ':requestParameter',
         ];
         $replace  = [
             $lang,
             $site,
-            $requestedParameter
+            $requestedParameter,
         ];
 
         $location = str_replace($needle, $replace, $location);
