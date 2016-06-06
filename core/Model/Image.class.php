@@ -112,7 +112,7 @@ class Image
      *
      * @param int $galleryId - Gallery ID
      */
-    function deleteImageByGalleryId($galleryId)
+    public function deleteImageByGalleryId(int $galleryId)
     {
         $sth = $GLOBALS['db']->prepare('SELECT id FROM image WHERE galleryId=' . $galleryId);
         $sth->execute();
@@ -126,7 +126,7 @@ class Image
      *
      * @param int $imageId - Image ID
      */
-    function deleteImageById($imageId)
+    public function deleteImageById(int $imageId)
     {
         $entry = Image::getImageByID($imageId);
 
@@ -152,7 +152,7 @@ class Image
      * @return mixed - Array of the image information with these keys: id, galleryId, imagePath, thumbnailPath,
      *               thumbnailPath2 and thumbnailPath3
      */
-    function getImageByID($imageID)
+    public function getImageByID(int $imageID)
     {
         $sth = $GLOBALS['db']->prepare('SELECT * FROM image WHERE id=' . $imageID);
         $sth->execute();

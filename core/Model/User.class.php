@@ -180,7 +180,7 @@ class User
      * @return String - The password hash as string
      * @throws Exception - If SQL statement isn't working
      */
-    public function getHashById($userID)
+    public function getHashById(int $userID)
     {
         try {
             $sth = $GLOBALS['db']->prepare('SELECT password FROM user WHERE id=' . $userID);
@@ -201,7 +201,7 @@ class User
      *
      * @throws Exception - If SQL statement isn't working
      */
-    function deleteUserById($userId)
+    public function deleteUserById(int $userId)
     {
         try {
             Gallery::deleteGalleryByUser($userId);
@@ -222,7 +222,7 @@ class User
      *
      * @return bool
      */
-    function checkIfOwnAccountOrRedirect($userId, $id, $redirectURL)
+    public function checkIfOwnAccountOrRedirect(int $userId, int $id, string $redirectURL)
     {
         if ($id === $_SESSION['userId'] || User::isAdmin($userId) === 1) {
             return TRUE;
@@ -239,7 +239,7 @@ class User
      *
      * @return boolean - If he is an admin as boolean
      */
-    function isAdmin($id)
+    public static function isAdmin(int $id)
     {
         $sth = $GLOBALS['db']->prepare('SELECT isAdmin FROM user WHERE id=' . $id);
         $sth->execute();

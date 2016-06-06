@@ -492,11 +492,9 @@ class Imagely
      *
      * @return bool - Returns true if logged in
      */
-    function checkAdminRedirect(string $redirect)
+    public function checkAdminRedirect(string $redirect)
     {
-        //Check if username exists in session, to make sure that user is logged in
         if (isset($_SESSION['userId'])) {
-            //Get hash from database and check if hash and id in session match, to make sure user is correctly logged in
             if ($this->user->isAdmin($_SESSION['userId']) === TRUE) {
                 return TRUE;
             }

@@ -14,7 +14,7 @@ class Template
      *
      * @return array - Array with all available sites
      */
-    function getAvailableSites()
+    public function getAvailableSites()
     {
         $availableTemplates = [
             'Home',
@@ -62,7 +62,7 @@ class Template
      *
      * @return string - HTML string
      */
-    function getTemplate($pageName)
+    public function getTemplate(string $pageName)
     {
         switch ($pageName) {
             case 'Account':

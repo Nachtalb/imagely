@@ -67,6 +67,10 @@ $lang['TXT_IMAGELY_GALLERIES_HEADING']  = "My galleries";
 $lang['TXT_IMAGELY_GALLERIES_MODIFIED'] = "Last modified:";
 $lang['TXT_IMAGELY_GALLERIES_YOU_SURE'] = "Are you sure you want to delete this gallery?";
 
+//Gallery
+$lang['TXT_IMAGELY_GALLERY_NO_IMAGES'] = 'There are no images in this gallery yet.';
+$lang['TXT_IMAGELY_GALLERY_ADD_IMAGE'] = 'Add Images';
+
 //Edit
 $lang['TXT_IMAGELY_EDIT_HEADING']      = "Edit gallery";
 $lang['TXT_IMAGELY_EDIT_NAME']         = "Name";
