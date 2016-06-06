@@ -81,10 +81,8 @@ $lang['TXT_IMAGELY_EDIT_IMAGE_BUTTON'] = "Choose teaserimage...";
 $lang['TXT_IMAGELY_EDIT_EDIT']         = "Save gallery";
 
 //Account
-$lang['TXT_IMAGELY_ACCOUNT_HEADING']       = "My account";
-$lang['TXT_IMAGELY_ACCOUNT_ISADMIN']       = "Is admin:";
-$lang['TXT_IMAGELY_ACCOUNT_ISADMIN_TRUE']  = "<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span>";
-$lang['TXT_IMAGELY_ACCOUNT_ISADMIN_FALSE'] = "<span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>";
+$lang['TXT_IMAGELY_ACCOUNT_HEADING'] = "My account";
+$lang['TXT_IMAGELY_ACCOUNT_ISADMIN'] = "Is admin:";
 
 //Admin
 $lang['TXT_IMAGELY_ADMIN_HEADING']         = "Administration";

@@ -35,13 +35,13 @@ class Language
     {
         switch ($language) {
             case 'de':
-                require_once(DOCUMENT_ROOT . '/data/lang/german.php');
+                require_once(DOCUMENT_ROOT . '/data/lang/de.php');
                 break;
             case 'en':
-                require_once(DOCUMENT_ROOT . '/data/lang/english.php');
+                require_once(DOCUMENT_ROOT . '/data/lang/en.php');
                 break;
             default:
-                require_once(DOCUMENT_ROOT . '/data/lang/german.php');
+                require_once(DOCUMENT_ROOT . '/data/lang/de.php');
         }
 
         return $lang;

@@ -80,10 +80,8 @@ $lang['TXT_IMAGELY_EDIT_IMAGE_BUTTON'] = "Teaserbild auswählen...";
 $lang['TXT_IMAGELY_EDIT_EDIT']         = "Galerie speichern";
 
 //Account
-$lang['TXT_IMAGELY_ACCOUNT_HEADING']       = "Mein Account";
-$lang['TXT_IMAGELY_ACCOUNT_ISADMIN']       = "Ist Admin:";
-$lang['TXT_IMAGELY_ACCOUNT_ISADMIN_TRUE']  = "<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span>";
-$lang['TXT_IMAGELY_ACCOUNT_ISADMIN_FALSE'] = "<span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>";
+$lang['TXT_IMAGELY_ACCOUNT_HEADING'] = "Mein Account";
+$lang['TXT_IMAGELY_ACCOUNT_ISADMIN'] = "Ist Admin:";
 
 //Admin
 $lang['TXT_IMAGELY_ADMIN_HEADING']         = "Administration";

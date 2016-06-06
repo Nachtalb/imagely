@@ -169,7 +169,9 @@ class Imagely
                     $entry           = str_replace('{ACCOUNT_DELETE_HREF}', '/' . $requestedLanguage . '/DoDeleteAccount/' . $item['id'], $entry);
                     $entry           = str_replace('{ACCOUNT_EDIT_HREF}', '/' . $requestedLanguage . '/EditAccount/' . $item['id'], $entry);
                     $entry           = str_replace('{TXT_ACCOUNT_NAME}', $item['name'], $entry);
-                    $isAdminTxt      = $item['isAdmin'] == 1 ? $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_TRUE'] : $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_FALSE'];
+                    $isAdmin         = '<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>';
+                    $isNoAdmin       = '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>';
+                    $isAdminTxt      = ($item['isAdmin'] == 1) ? $isAdmin : $isNoAdmin;
                     $entry           = str_replace('{TXT_ACCOUNT_ISADMIN}', $isAdminTxt, $entry);
                     $contentAccounts = $contentAccounts . $entry;
                 }
@@ -197,7 +199,9 @@ class Imagely
                 $entry      = str_replace('{ACCOUNT_DELETE_HREF}', '/' . $requestedLanguage . '/DoDeleteAccount/' . $user['id'], $entry);
                 $entry      = str_replace('{ACCOUNT_EDIT_HREF}', '/' . $requestedLanguage . '/EditAccount/' . $user['id'], $entry);
                 $entry      = str_replace('{TXT_ACCOUNT_NAME}', $user['name'], $entry);
-                $isAdminTxt = $user['isAdmin'] == 1 ? $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_TRUE'] : $languageArray['TXT_IMAGELY_ACCOUNT_ISADMIN_FALSE'];
+                $isAdmin    = '<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>';
+                $isNoAdmin  = '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>';
+                $isAdminTxt = $user['isAdmin'] == 1 ? $isAdmin : $isNoAdmin;
                 $entry      = str_replace('{TXT_ACCOUNT_ISADMIN}', $isAdminTxt, $entry);
                 $content    = $content . $entry;
                 $page       = str_replace('{ACCOUNT_ENTRIES}', $content, $page);
