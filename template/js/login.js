@@ -8,26 +8,31 @@ $(document).ready(function () {
     function removeStatus(id) {
         $('#' + id + 'Status').remove();
     }
-    
+
     //if is empty status message vars
     var statusUsernameEmpty = false; //boolean for UsernameEmpty status message
     var statusPasswordEmpty = false; //boolean for PasswordEmpty status message
     var statusPasswordRepeatEmpty = false; //boolean for PasswordRepeatEmpty status message
-    $('#submit').on('click', function () {
+    $('#submit').on('click', function (e) {
         var submit = true; //submit if all is correctly filled-in
         $('form input').each(function () {
             var inputName = $(this).attr('name'); //stores name of inputfield
             var inputValue = $(this).val(); //stores value of inputfield
             if (inputValue === '') {
+                e.preventDefault();
                 addStatus('danger', inputName + 'Empty', 'Bitte füllen Sie folgendes Feld aus: ' + inputName);
                 var vars = {};
                 vars['status' + inputName + 'Empty'] = true;
                 submit = false;
+                return false;
             }
         });
         //submit form if all is filled-in
         if (submit === true) {
             $('#login').submit();
+        } else {
+            e.preventDefault();
+            return false;
         }
     });
     //validation status message vars

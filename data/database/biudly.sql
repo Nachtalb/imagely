@@ -68,7 +68,7 @@ INSERT INTO `gallery` (`id`, `author`, `status`, `name`, `description`) VALUES
 -- Dumping data for table `image`
 --
 
-INSERT INTO `image` (`id`, `galleryId`, `thumbnailPath`, `imagePath`) VALUES
+INSERT INTO `image` (`id`, `galleryId`, `thumbnailPath1`, `imagePath`) VALUES
 (1, 1, '/data/media/gallery/image.jpg', '/data/media/gallery/image.jpg');
 
 --

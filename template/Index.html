@@ -1,0 +1,58 @@
+<!doctype html>
+<html class="{TXT_CLASS_TEXT_COLOUR}">
+<head>
+    <title>{TXT_IMAGELY_GENERAL_TITLE}</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link href="{PATH_OFFSET}/template/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="{PATH_OFFSET}/lib/node_modules/magnific-popup/dist/magnific-popup.css" rel="stylesheet" type="text/css">
+    <link href="{PATH_OFFSET}/template/css/main.css" rel="stylesheet" type="text/css">
+    <link href="{PATH_OFFSET}/template/img/favicon.png" rel="shortcut icon" type="image/x-icon"/>
+
+    <script type="text/javascript" src="{PATH_OFFSET}/lib/node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="{PATH_OFFSET}/lib/node_modules/magnific-popup/dist/jquery.magnific-popup.min.js"></script>
+    <script type="text/javascript" src="{PATH_OFFSET}/lib/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{PATH_OFFSET}/lib/node_modules/jquery-lazyload/jquery.lazyload.min.js"></script>
+    <script type="text/javascript" src="{PATH_OFFSET}/template/js/main.js"></script>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-default {TXT_CLASS_NAV_COLOUR} navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">{TXT_IMAGELY_NAVIGATION_TOGGLE}</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{DEFAULT_SITE}">{TXT_IMAGELY_NAVIGATION_BRAND}</a>
+        </div>
+        <!-- Collect the nav links, forms, and other data for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                {NAVIGATION}
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+{CONTENT}
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <p class="copyright text-muted">{TXT_IMAGELY_GENERAL_COPYRIGHT}</p>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

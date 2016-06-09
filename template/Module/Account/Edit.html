@@ -1,0 +1,52 @@
+<!-- Page Header -->
+<header class="intro-header" style="background-image: url('{PATH_OFFSET}/data/media/content/admin-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="site-heading">
+                    <h1>{TXT_IMAGELY_ACCOUNT_EDIT_HEADING}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Imports for create -->
+<script type="text/javascript" src="{PATH_OFFSET}/template/js/signup.js"></script>
+<div class="container">
+    {TXT_INFO}
+    <div id="status"></div>
+    <form action="{PATH_OFFSET}/{LANGUAGE}/Account_DoEdit/{ACCOUNT_USERID}" method="post" class="form-horizontal"
+          id="registration">
+        <div class="form-group">
+            <div class="col-xs-12">
+                <label class="control-label" for="email">{TXT_IMAGELY_ACCOUNT_EDIT_USERNAME}</label>
+
+                <input type="email" tabindex="1" class="form-control" name="email" id="email"
+                       value="{TXT_SIGNUP_USERNAME}">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-12">
+                <label class="control-label"
+                       for="password">{TXT_IMAGELY_ACCOUNT_EDIT_NEW_PASSWORD}</label>
+
+                <input type="password" tabindex="2" class="form-control" name="password" id="password">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-12">
+                <label class="control-label" for="passwordRepeat">{TXT_IMAGELY_ACCOUNT_EDIT_NEW_PASSWORD_REPEAT}</label>
+
+                <input type="password" tabindex="3" class="form-control" name="passwordRepeat" id="passwordRepeat">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-12">
+                <input type="submit" class="btn btn-primary" tabindex="4"
+                       value="{TXT_IMAGELY_ACCOUNT_EDIT_FORM_SUBMIT}"/>
+
+                <a class="btn btn-default" href="/Account_Profile/{ACCOUNT_USERID}" tabindex="5" id="reset">{TXT_IMAGELY_ACCOUNT_EDIT_FORM_CANCEL}</a>
+            </div>
+        </div>
+    </form>
+</div>

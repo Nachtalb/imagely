@@ -20,7 +20,7 @@ class User
     public function getAll()
     {
         try {
-            $sth = $GLOBALS['db']->prepare('SELECT * FROM user');
+            $sth = $GLOBALS['db']->prepare('SELECT * FROM `user`');
             $sth->execute();
             $return = json_decode(json_encode($sth->fetchAll()), TRUE);
 
@@ -41,7 +41,7 @@ class User
     {
         try {
             $return = [];
-            $sth    = $GLOBALS['db']->prepare('SELECT id FROM user');
+            $sth    = $GLOBALS['db']->prepare('SELECT `id` FROM `user`');
             $sth->execute();
             while ($result = $sth->fetchALL()) {
                 $return[] = (int)$result['id'];
@@ -134,9 +134,8 @@ class User
 
             $name     = $data['username'];
             $password = password_hash($data['password'], PASSWORD_DEFAULT);
-            //fixme: something is not right here
-            $sth = $GLOBALS['db']->prepare('INSERT INTO user (name, password) VALUES (\'' . $name . '\', \'' . $password . '\')');
-            $sth::execute();
+            $sth      = $GLOBALS['db']->prepare('INSERT INTO user (name, password) VALUES (\'' . $name . '\', \'' . $password . '\')');
+            $sth->execute();
 
         } catch (\Exception $e) {
             throw new Exception("Error  : " . $e->getMessage());
@@ -153,19 +152,20 @@ class User
      * @throws Exception - If SQL statement isn't working
      *
      */
-    public function editUserByID(int $userID, string $password, bool $isAdmin)
+    public function editUserByID(int $userID, string $email = NULL, string $password = NULL, bool $isAdmin = NULL)
     {
         try {
-            $password = password_hash($password, PASSWORD_DEFAULT);
-            if (isset($isAdmin)) {
-                $isAdmin = ($isAdmin === TRUE || $isAdmin === 1 || $isAdmin === '1') ? 1 : 0;
-                $sth     = $GLOBALS['db']->prepare('UPDATE user SET password=\'' . $password . '\', isAdmin=\'' . $isAdmin . '\' WHERE id=' . $userID);
+            $userInfo = $this->getUserById($userID);
+            $email    = ($email !== NULL) ? $email : $userInfo['name'];
+            $isAdmin  = ($isAdmin !== NULL) ? $isAdmin : $userInfo['isAdmin'];
+            $hash = ($password !== NULL) ? password_hash($password, PASSWORD_DEFAULT) : $userInfo['password'];
 
-            } else {
-                $sth = $GLOBALS['db']->prepare('UPDATE user SET password=\'' . $password . '\' WHERE id=' . $userID);
+            $isAdmin = ($isAdmin === TRUE || $isAdmin === 1 || $isAdmin === '1') ? 1 : 0;
+            $sth     = $GLOBALS['db']->prepare('UPDATE `user` SET `name`=\'' . $email . '\', `password`=\'' . $hash . '\', `isAdmin`=\'' . $isAdmin . '\' WHERE `id`=' . $userID);
 
-            }
             $sth->execute();
+
+            $_SESSION['hash']   = $hash;
 
         } catch (\Exception $e) {
             throw new Exception("Error  : " . $e->getMessage());
@@ -206,7 +206,7 @@ class User
         try {
             Gallery::deleteGalleryByUser($userId);
             $sth = $GLOBALS['db']->prepare('DELETE FROM user WHERE id=' . $userId);
-            $sth::execute();
+            $sth->execute();
         } catch (\Exception $e) {
             throw new Exception("Error  : " . $e->getMessage());
         }
@@ -249,5 +249,4 @@ class User
 
         return $result;
     }
-
 }

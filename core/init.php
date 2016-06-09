@@ -10,18 +10,16 @@
 
 function init()
 {
-    //Check php version (5.5.0 or newer is required)
-    $php = phpversion();
-    if (version_compare($php, '5.5.0') < 0) {
-        die('imagely ben&ouml;tigt mindestens PHP in der Version 5.5.0.<br />Auf Ihrem System l&auml;uft PHP ' . $php);
+    if (version_compare(PHP_VERSION, '7.0.3', '<')) {
+        die('<span style="font-family: sans-serif"><span style="font-weight: bold;">Imagely &copy;</span> ' .
+            'needs at leas <a target="_blank" href="https://secure.php.net/releases/#7.0.3">PHP 7.0.3</a>. ' .
+            'You have PHP <a target="_blank" href="https://secure.php.net/releases/#' . PHP_VERSION . '">' . PHP_VERSION . '</a> installed.</span>');
     }
 
-    //Include config
     require_once dirname(__DIR__) . '/config/configuration.php';
+    require_once DOCUMENT_ROOT . '/lib/php/additionalPHPFunctions.php';
 
-    //Include controller
     require_once DOCUMENT_ROOT . '/core/Controller/Imagely.class.php';
-
 
     $controller = new Imagely();
 

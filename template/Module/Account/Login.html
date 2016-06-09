@@ -1,0 +1,47 @@
+<!-- Page Header -->
+<header class="intro-header" style="background-image: url('{PATH_OFFSET}/data/media/content/admin-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="site-heading">
+                    <h1>{TXT_IMAGELY_ACCOUNT_LOGIN_HEADING}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Imports for create -->
+<script type="text/javascript" src="{PATH_OFFSET}/template/js/login.js"></script>
+<div class="container">
+    {TXT_INFO}
+    <div id="status"></div>
+    <form action="{PATH_OFFSET}/{LANGUAGE}/Account_DoLogin" method="post" class="form-horizontal" id="login">
+        <div class="form-group">
+            <div class="col-xs-12">
+                <label for="Username"
+                       class="control-label">{TXT_IMAGELY_ACCOUNT_LOGIN_USERNAME}</label>
+
+                <input type="email" class="form-control" tabindex="1" value="{TXT_LOGIN_USERNAME}" name="Username"
+                       id="Username">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-12">
+                <label for="Password"
+                       class="control-label">{TXT_IMAGELY_ACCOUNT_LOGIN_PASSWORD}</label>
+
+                <input type="password" class="form-control" tabindex="2" name="Password" id="Password">
+            </div>
+        </div>
+        <p>{TXT_IMAGELY_ACCOUNT_LOGIN_NO_ACCOUNT} <a href="/Account_Signup" tabindex="3">{TXT_IMAGELY_ACCOUNT_LOGIN_REGISTER_NOW}</a>
+        </p>
+        <div class="form-group">
+            <div class="col-xs-12">
+                <input class="btn btn-primary" id="submit" type="submit" tabindex="4"
+                       value="{TXT_IMAGELY_ACCOUNT_LOGIN_FORM_SUBMIT}"/>
+                <input class="btn btn-default" id="reset" type="reset" tabindex="5" form="login"
+                       value="{TXT_IMAGELY_ACCOUNT_LOGIN_FORM_RESET}"/>
+            </div>
+        </div>
+    </form>
+</div>

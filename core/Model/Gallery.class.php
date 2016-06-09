@@ -18,7 +18,7 @@ class Gallery
      */
     public function getAll()
     {
-        $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery ORDER BY creationDate DESC');
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM `gallery` ORDER BY `creationDate` DESC');
         $sth->execute();
         $result = $sth->fetchAll();
         $return = json_decode(json_encode($result), TRUE);
@@ -45,9 +45,9 @@ class Gallery
      * @return array - Array of all galleries from the given userID with the following data: [n] - id, author, status,
      *               name, description, createDate and modifiedData
      */
-    public function getAllByAuthor(int $userID)
+    public function getAllGalleriesByUserID(int $userID)
     {
-        $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE author=' . $userID . ' ORDER BY creationDate DESC');
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM `gallery` WHERE `author`=' . $userID . ' ORDER BY `creationDate` DESC');
         $sth->execute();
         $result = $sth->fetchAll();
         $return = json_decode(json_encode($result), TRUE);
@@ -73,7 +73,7 @@ class Gallery
      */
     public function getAvailableGalleries()
     {
-        $sth = $GLOBALS['db']->prepare('SELECT id FROM gallery');
+        $sth = $GLOBALS['db']->prepare('SELECT `id` FROM `gallery`');
         $sth->execute();
         $result = $sth->fetchAll();
         $return = json_decode(json_encode($result), TRUE);
@@ -102,7 +102,7 @@ class Gallery
      */
     public function createGallery(array $data)
     {
-        $this->checkImage($data['image']);
+        Image::checkImage($data['image']['tmp_name']);
 
         $author       = $data['author'];
         $status       = $data['status'];
@@ -111,12 +111,12 @@ class Gallery
         $creationDate = $data['creationDate'];
         $modifiedDate = $data['modifiedDate'];
 
-        $teaserImage = $this->createTeaserImage($data['image']);
+        $teaserImage = $this->createTeaserImage($data['image']['tmp_name']);
 
         $teaserImagePath      = $teaserImage['imagePath'];
         $teaserImageThumbnail = $teaserImage['imageThumbnailPath'];
 
-        $sth      = $GLOBALS['db']->prepare('INSERT INTO gallery (author,status,name,description,creationDate,modifiedDate,teaserImage,teaserImageThumbnail1,teaserImageThumbnail2,teaserImageThumbnail3) VALUES (:author,:status,:name,:description,:creationDate,:modifiedDate,:teaserImage,:teaserImageThumbnail1,:teaserImageThumbnail2,:teaserImageThumbnail3)');
+        $sth      = $GLOBALS['db']->prepare('INSERT INTO `gallery` (`author`,`status`,`name`,`description`,`creationDate`,`modifiedDate`,`teaserImage`,`teaserImageThumbnail1`,`teaserImageThumbnail2`,`teaserImageThumbnail3`) VALUES (:author,:status,:name,:description,:creationDate,:modifiedDate,:teaserImage,:teaserImageThumbnail1,:teaserImageThumbnail2,:teaserImageThumbnail3)');
         $bindings = [
             ':author'                => $author,
             ':status'                => $status,
@@ -147,7 +147,7 @@ class Gallery
      */
     private function createTeaserImage(string $image, int $galleryID = NULL, int $userID = NULL)
     {
-        $info = getimagesize($image['tmp_name']);
+        $info = getimagesize($image);
         if ($info[2] == IMAGETYPE_GIF)
             throw new Exception('Teaser image can\'t be a GIF, it has to be a JPEG or a PNG!');
 
@@ -161,7 +161,7 @@ class Gallery
         if (!is_dir(DOCUMENT_ROOT . $folderPath))
             mkdir(DOCUMENT_ROOT . $folderPath, 0755, TRUE);
 
-        imagepng(imagecreatefromstring(file_get_contents($image['tmp_name'])), DOCUMENT_ROOT . $finalImagePaht);
+        imagepng(imagecreatefromstring(file_get_contents($image)), DOCUMENT_ROOT . $finalImagePaht);
         $thumnail = Image::createThumbnail($finalImagePaht);
 
         $result = [
@@ -172,28 +172,6 @@ class Gallery
         return $result;
     }
 
-    /**
-     * Checks if a file is an image (gif/jpeg/png)
-     *
-     * @param string $image - Path to file
-     *
-     * @return bool - If it is an image
-     * @throws Exception - If it's not an image
-     */
-    private function checkImage(string $image)
-    {
-        $info = getimagesize($image['tmp_name']);
-        if ($info === FALSE) {
-            throw new Exception("Unable to determine image type of uploaded file");
-        }
-
-
-        if (($info[2] !== IMAGETYPE_GIF) && ($info[2] !== IMAGETYPE_JPEG) && ($info[2] !== IMAGETYPE_PNG)) {
-            throw new Exception("Not a gif/jpeg/png");
-        }
-
-        return TRUE;
-    }
 
     /**
      * Gets the number of the next gallery which will be created
@@ -202,7 +180,7 @@ class Gallery
      */
     private function getNextGalleryId()
     {
-        $sth = $GLOBALS['db']->prepare('SELECT AUTO_INCREMENT FROM information_schema.tables WHERE table_name = \'gallery\' AND table_schema = \'imagely\' ');
+        $sth = $GLOBALS['db']->prepare('SELECT `AUTO_INCREMENT` FROM `information_schema`.`tables` WHERE `table_name` = \'gallery\' AND `table_schema` = \'imagely\' ');
         $sth->execute();
 
         $result = json_decode(json_encode($sth->fetch()), TRUE);
@@ -225,13 +203,13 @@ class Gallery
         $modifiedDate = $data['modifiedDate'];
 
         if ($data['image'] !== NULL) {
-            $this->checkImage($data['image']);
-            $teaserImage = $this->createTeaserImage($data['image'], $ID);
+            Image::checkImage($data['image']['tmp_name']);
+            $teaserImage = $this->createTeaserImage($data['image']['tmp_name'], $ID);
 
             $teaserImagePath      = $teaserImage['imagePath'];
             $teaserImageThumbnail = $teaserImage['imageThumbnailPath'];
 
-            $sth      = $GLOBALS['db']->prepare('UPDATE gallery SET status=:status,name=:name,description=:description,modifiedDate=:modifiedDate,teaserImage=:teaserImage,teaserImageThumbnail1=:teaserImageThumbnail1,teaserImageThumbnail2=:teaserImageThumbnail2,teaserImageThumbnail3=:teaserImageThumbnail3 WHERE id=:ID');
+            $sth      = $GLOBALS['db']->prepare('UPDATE `gallery` SET `status`=:status,`name`=:name,`description`=:description,`modifiedDate`=:modifiedDate,`teaserImage`=:teaserImage,`teaserImageThumbnail1`=:teaserImageThumbnail1,`teaserImageThumbnail2`=:teaserImageThumbnail2,`teaserImageThumbnail3`=:teaserImageThumbnail3 WHERE `id`=:ID');
             $bindings = [
                 ':status'                => $status,
                 ':name'                  => $name,
@@ -244,7 +222,7 @@ class Gallery
                 ':ID'                    => $ID,
             ];
         } else {
-            $sth      = $GLOBALS['db']->prepare('UPDATE gallery SET status=:status,name=:name,description=:description,modifiedDate=:modifiedDate WHERE id=:ID');
+            $sth      = $GLOBALS['db']->prepare('UPDATE `gallery` SET `status`=:status,`name`=:name,`description`=:description,`modifiedDate`=:modifiedDate WHERE `id`=:ID');
             $bindings = [
                 ':status'       => $status,
                 ':name'         => $name,
@@ -262,13 +240,16 @@ class Gallery
      *
      * @param int $userID - Users ID
      */
-    public function deleteGalleryByUser(int $userID)
+    public static function deleteGalleryByUser(int $userID)
     {
-        $sth = $GLOBALS['db']->prepare('SELECT id FROM gallery WHERE author=' . $userID);
-        $sth->execute();
-        while ($result = json_decode(json_encode($sth->fetchAll()), TRUE)) {
-            Gallery::deleteGalleryById($result['id']);
+        $galleries = self::getAllGalleriesByUserID($userID);
+
+        foreach ($galleries as $gallery) {
+            Image::deleteImageByGalleryId($gallery['id']);
         }
+
+        $sth = $GLOBALS['db']->prepare('DELETE FROM `gallery` WHERE `author`=' . $userID);
+        $sth->execute();
     }
 
     /**
@@ -278,7 +259,7 @@ class Gallery
      */
     public function deleteGalleryById(int $id)
     {
-        $sth = $GLOBALS['db']->prepare('DELETE FROM gallery WHERE id=' . $id);
+        $sth = $GLOBALS['db']->prepare('DELETE FROM `gallery` WHERE `id`=' . $id);
         $sth->execute();
     }
 
@@ -290,16 +271,18 @@ class Gallery
      * @return mixed - An Array with this data: id, author - ID of the user, status, name, description, creationDate,
      *               modifiedDate
      */
-    public function getGalleryById(int $id)
+    public static function getGalleryById(int $id)
     {
-        $sth = $GLOBALS['db']->prepare('SELECT * FROM gallery WHERE id=' . $id);
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM `gallery` WHERE `id`=' . $id);
         $sth->execute();
-        $return                = json_decode(json_encode($sth->fetch()), TRUE);
+        $return = json_decode(json_encode($sth->fetch()), TRUE);
+        if ($return === FALSE)
+            return FALSE;
         $return['description'] = html_entity_decode($return['description']);
 
         $date = new DateTime();
         $date->setTimestamp($return['creationDate']);
-        $return['creationDate'] = $date->format('d-m-Y H:i');
+        $return['creationDate'] = $date->format('d.m.Y H:i');
 
         return $return;
     }
@@ -314,7 +297,7 @@ class Gallery
      */
     public function getImageByGalleryId(int $galleryID)
     {
-        $sth = $GLOBALS['db']->prepare('SELECT * FROM image WHERE galleryId=' . $galleryID);
+        $sth = $GLOBALS['db']->prepare('SELECT * FROM `image` WHERE `galleryId`=' . $galleryID);
         $sth->execute();
         $return = json_decode(json_encode($sth->fetchAll()), TRUE);
 
@@ -325,16 +308,16 @@ class Gallery
      * Check if given user id matches with the given id or if the user is an admin, otherwise it will forward the user
      * to the given url
      *
-     * @param int $userID      - The users ID
-     * @param int $id          - ID you want to compare
-     * @param int $redirectURL - URL to redirect to
+     * @param int    $userID      - The users ID
+     * @param int    $id          - ID you want to compare
+     * @param string $redirectURL - URL to redirect to
      *
      * @return bool
      */
     public function checkIfOwnAccountOrRedirect(int $userID, int $id, string $redirectURL)
     {
         $return = [];
-        $sth    = $GLOBALS['db']->prepare('SELECT id FROM gallery WHERE author=' . $userID);
+        $sth    = $GLOBALS['db']->prepare('SELECT `id` FROM `gallery` WHERE `author`=' . $userID);
         $sth->execute();
         while ($result = json_decode(json_encode($sth->fetch()), TRUE)) {
             $return[] = (string)$result['id'];
@@ -350,73 +333,28 @@ class Gallery
     /**
      * Check if given user id matches with the given id or if the user is an admin
      *
-     * @param int $userID    - ID of the user
-     * @param int $galleryID - ID of the gallery
+     * @param int|null $userID    - ID of the user
+     * @param int      $galleryID - ID of the gallery
      *
      * @return bool
      */
-    public function checkIfOwnerOrAdmin(int $userID, int $galleryID)
+    public static function checkIfOwnerOrAdmin(int $userID = NULL, int $galleryID)
     {
         $return = [];
-        $sth    = $GLOBALS['db']->prepare('SELECT author FROM gallery WHERE id=:galleryID');
-        $sth->bindValue(':galleryID', $galleryID);
-        $sth->execute();
-        while ($result = json_decode(json_encode($sth->fetch()), TRUE)) {
-            $return[] = (string)$result['id'];
-        }
-        if (in_array($galleryID, $return, TRUE) || User::isAdmin($userID) == 1) {
-            return TRUE;
-        }
+        if ($userID !== NULL) {
+            $sth = $GLOBALS['db']->prepare('SELECT `author` FROM `gallery` WHERE `id`=:galleryID');
+            $sth->bindValue(':galleryID', $galleryID);
+            $sth->execute();
 
-        return FALSE;
-    }
+            while ($result = json_decode(json_encode($sth->fetch()), TRUE)) {
+                $return = $result['author'];
+            }
 
-    /**
-     * Get average luminance of an image to determine if it's dark or light
-     * Function from here: http://stackoverflow.com/a/5959461/5699307
-     *
-     * @param string $filename    - FilePath
-     * @param int    $num_samples - Get average luminance, by sampling $num_samples times in both x,y directions
-     *
-     * @return float - Average luminance of the image
-     */
-    public function get_avg_luminance(string $filename, int $num_samples = 20)
-    {
-        $img = imagecreatefrompng(DOCUMENT_ROOT . $filename);
-
-        $width  = imagesx($img);
-        $height = imagesy($img);
-
-        $x_step = intval($width / $num_samples);
-        $y_step = intval($height / $num_samples);
-
-        $total_lum = 0;
-
-        $sample_no = 1;
-
-        for ($x = 0 ; $x < $width ; $x += $x_step) {
-            for ($y = 0 ; $y < $height ; $y += $y_step) {
-
-                $rgb = imagecolorat($img, $x, $y);
-                $r   = ($rgb >> 16) & 0xFF;
-                $g   = ($rgb >> 8) & 0xFF;
-                $b   = $rgb & 0xFF;
-
-                // choose a simple luminance formula from here
-                // http://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
-                $lum = ($r + $r + $b + $g + $g + $g) / 6;
-
-                $total_lum += $lum;
-
-                // debugging code
-                //           echo "$sample_no - XY: $x,$y = $r, $g, $b = $lum<br />";
-                $sample_no++;
+            if ($return == $_SESSION['userId'] || User::isAdmin($userID) == 1) {
+                return TRUE;
             }
         }
 
-        // work out the average
-        $avg_lum = $total_lum / $sample_no;
-
-        return $avg_lum;
+        return FALSE;
     }
 }

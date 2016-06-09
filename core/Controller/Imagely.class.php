@@ -93,37 +93,69 @@ class Imagely
      */
     function getPage()
     {
-        //Create instances
-
         //getAvailableLanguages
         $availableLanguages = $this->language->getAvailableLanguages();
 
         //getAvailableTemplates
-        $availableTemplates = $this->template->getAvailableSites();
+        $availableTemplates = $this->template->pagesArr;
 
         //Get requestedLanguage & requestedTemplate
         $urlParts = explode('/', $_GET['__cap']);
-
         //Set requestedLanguage
-        if (!isset($urlParts[1]) || $urlParts[1] == 'index.php' || $urlParts[1] == '' || $urlParts[2] == '' || !in_array($urlParts[1], $availableLanguages, TRUE))
-            $this->redirectTo($availableTemplates[0], NULL);
-        else
-            $requestedLanguage = $urlParts[1];
+        if ($this->template->getPageByName($urlParts[1]) !== FALSE) {
+            if (!isset($_SESSION['lang']))
+                $_SESSION['lang'] = $GLOBALS['CONFIG']['LANG'];
+            $requestedParameter = (isset($urlParts[2])) ? $urlParts[2] : NULL;
 
+            //todo get params
+            /*            $get = '?';
+                        foreach ($_GET as $key => $item) {
+                            if ($key !== '__cap') {
+                                $get .= $key . '=' . $item . '&';
+                            }
+                        }
+                        $get = (count($get) >  2) ? $get : '';*/
+
+            $this->redirectTo($urlParts[1], $_SESSION['lang'], $requestedParameter);
+
+        } else if (!isset($urlParts[1]) || $urlParts[1] == 'index.php' || $urlParts[1] == '' || $urlParts[2] == '' || !in_array($urlParts[1], $availableLanguages, TRUE)) {
+            if (!isset($_SESSION['lang']))
+                $_SESSION['lang'] = $GLOBALS['CONFIG']['LANG'];
+            $this->redirectTo('Home', $_SESSION['lang']);
+        } else {
+            $_SESSION['lang']  = $urlParts[1];
+            $requestedLanguage = $urlParts[1];
+        }
         //Set default site
         $defaultSite = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[0];
+
+        //todo: if logged in do stuff
+        // if(isset($_SESSION['userId']) && )
 
         //getLanguageArray by requestedLanguage
         $languageArray = $this->language->getLanguageArray($requestedLanguage);
         //Set requestedTemplate
-        if (isset($urlParts[2])) {
+        if (isset($urlParts[2]) && $this->template->getPageByName($urlParts[2])) {
             $requestedTemplate = $urlParts[2];
-            if (in_array($requestedTemplate, $availableTemplates, TRUE)) {
-                $requestedParameter = $urlParts[3];
+
+            if ($this->template->needsParams($requestedTemplate)) {
+                if (isset($urlParts[3]) && $urlParts[3] != '') {
+                    $requestedParameter = $urlParts[3];
+                } else {
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-info">' .
+                        $languageArray['TXT_IMAGELY_GENERAL_NOPARAS'] .
+                        '</div></div></div>';
+                    $this->redirectTo('Home');
+                }
             }
         } else {
-            header($defaultSite);
+            echo '<pre>';
+            var_dump($urlParts);
+            echo '</pre>';
+            die();
+            $this->redirectTo('Home');
         }
+
 
         //getTemplate by requestedTemplate
         $page = $this->template->getTemplate($requestedTemplate);
@@ -133,8 +165,8 @@ class Imagely
                 $content   = NULL;
                 $galleries = $this->gallery->getAll();
                 foreach ($galleries as $item) {
-                    $entry   = file_get_contents(DOCUMENT_ROOT . '/template/home_entry.html');
-                    $entry   = str_replace('{GALLERY_LINK_HREF}', '/' . $requestedLanguage . '/Detail/' . $item['id'], $entry);
+                    $entry   = file_get_contents(DOCUMENT_ROOT . '/template/Module/Home//Entry.html');
+                    $entry   = str_replace('{GALLERY_LINK_HREF}', '/' . $requestedLanguage . '/Gallery_Detail/' . $item['id'], $entry);
                     $entry   = str_replace('{TXT_GALLERY_NAME}', $item['name'], $entry);
                     $entry   = str_replace('{TXT_GALLERY_DESCRIPTION}', $item['description'], $entry);
                     $entry   = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById($item['author']), $entry);
@@ -143,16 +175,15 @@ class Imagely
                 }
                 $page = str_replace('{GALLERY_ENTRIES}', $content, $page);
                 break;
-
-            case 'Admin':
+            case 'Account_Admin':
                 Imagely::checkSessionRedirect($defaultSite);
                 Imagely::checkAdminRedirect($defaultSite);
                 $contentAccounts = NULL;
                 $users           = $this->user->getAll();
                 foreach ($users as $key => $item) {
-                    $entry           = file_get_contents(DOCUMENT_ROOT . '/template/account_entry.html');
-                    $entry           = str_replace('{ACCOUNT_DELETE_HREF}', '/' . $requestedLanguage . '/DoDeleteAccount/' . $item['id'], $entry);
-                    $entry           = str_replace('{ACCOUNT_EDIT_HREF}', '/' . $requestedLanguage . '/EditAccount/' . $item['id'], $entry);
+                    $entry           = file_get_contents(DOCUMENT_ROOT . '/template/Module/Account/Entry.html');
+                    $entry           = str_replace('{ACCOUNT_DELETE_HREF}', '/' . $requestedLanguage . '/Account_DoDelete/' . $item['id'], $entry);
+                    $entry           = str_replace('{ACCOUNT_EDIT_HREF}', '/' . $requestedLanguage . '/Account_Edit/' . $item['id'], $entry);
                     $entry           = str_replace('{TXT_ACCOUNT_NAME}', $item['name'], $entry);
                     $isAdmin         = '<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>';
                     $isNoAdmin       = '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>';
@@ -164,10 +195,10 @@ class Imagely
                 $contentGalleries = NULL;
                 $galleries        = $this->gallery->getAll();
                 foreach ($galleries as $key => $item) {
-                    $entry            = file_get_contents(DOCUMENT_ROOT . '/template/gallery_entry.html');
-                    $entry            = str_replace('{GALLERIES_EDIT_HREF}', '/' . $requestedLanguage . '/Edit/' . $item['id'], $entry);
-                    $entry            = str_replace('{GALLERIES_LINK_HREF}', '/' . $requestedLanguage . '/Detail/' . $item['id'], $entry);
-                    $entry            = str_replace('{GALLERIES_DELETE_HREF}', '/' . $requestedLanguage . '/DoDeleteGallery/' . $item['id'], $entry);
+                    $entry            = file_get_contents(DOCUMENT_ROOT . '/template/Module/Gallery/Entry.html');
+                    $entry            = str_replace('{GALLERIES_EDIT_HREF}', '/' . $requestedLanguage . '/Gallery_Edit/' . $item['id'], $entry);
+                    $entry            = str_replace('{GALLERIES_LINK_HREF}', '/' . $requestedLanguage . '/Gallery_Detail/' . $item['id'], $entry);
+                    $entry            = str_replace('{GALLERIES_DELETE_HREF}', '/' . $requestedLanguage . '/Gallery_DoDelete/' . $item['id'], $entry);
                     $entry            = str_replace('{TXT_GALLERIES_NAME}', $item['name'], $entry);
                     $entry            = str_replace('{TXT_GALLERIES_DESCRIPTION}', $item['description'], $entry);
                     $entry            = str_replace('{TXT_GALLERIES_MODIFIED}', $item['modifiedDate'], $entry);
@@ -175,14 +206,13 @@ class Imagely
                 }
                 $page = str_replace('{GALLERY_ENTRIES}', $contentGalleries, $page);
                 break;
-            case
-            'Account':
+            case 'Account_Profile':
                 Imagely::checkSessionRedirect($defaultSite);
                 $content    = NULL;
                 $user       = $this->user->getUserById($_SESSION['userId']);
-                $entry      = file_get_contents(DOCUMENT_ROOT . '/template/account_entry.html');
-                $entry      = str_replace('{ACCOUNT_DELETE_HREF}', '/' . $requestedLanguage . '/DoDeleteAccount/' . $user['id'], $entry);
-                $entry      = str_replace('{ACCOUNT_EDIT_HREF}', '/' . $requestedLanguage . '/EditAccount/' . $user['id'], $entry);
+                $entry      = file_get_contents(DOCUMENT_ROOT . '/template/Module/Account/Entry.html');
+                $entry      = str_replace('{ACCOUNT_DELETE_HREF}', '/' . $requestedLanguage . '/Account_DoDelete/' . $user['id'], $entry);
+                $entry      = str_replace('{ACCOUNT_EDIT_HREF}', '/' . $requestedLanguage . '/Account_Edit/' . $user['id'], $entry);
                 $entry      = str_replace('{TXT_ACCOUNT_NAME}', $user['name'], $entry);
                 $isAdmin    = '<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>';
                 $isNoAdmin  = '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>';
@@ -191,10 +221,10 @@ class Imagely
                 $content    = $content . $entry;
                 $page       = str_replace('{ACCOUNT_ENTRIES}', $content, $page);
                 break;
-            case 'EditAccount':
-                //todo: edit account page
+            case 'Account_Edit':
+                $page = str_ireplace('{ACCOUNT_USERID}', $requestedParameter, $page);
                 break;
-            case 'DoLogin':
+            case 'Account_DoLogin':
                 if (isset($_POST)) {
                     $username                                       = htmlentities($_POST['Username']);
                     $password                                       = htmlentities($_POST['Password']);
@@ -213,59 +243,108 @@ class Imagely
                         $_SESSION['userId']  = $id;
                         $_SESSION['hash']    = $hash;
                         unset($_SESSION['SESSION_VARS']['TXT_LOGIN_USERNAME']);
-                        $this->redirectTo($availableTemplates[12], $requestedLanguage);
+                        $this->redirectTo('Account_Profile', NULL, (int)$requestedLanguage);
                     } else {
-                        $this->redirectTo($availableTemplates[3], $requestedLanguage);
+                        $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                            $languageArray['TXT_IMAGELY_ACCOUNT_LOGIN_INCORRECT'] .
+                            '</div></div></div>';
+                        $this->redirectTo('Account_Login');
                     }
                 } else {
-                    $this->redirectTo($availableTemplates[3], $requestedLanguage);
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                        $languageArray['TEXT_IMAGELY_GENERAL_FILL_ALL'] .
+                        '</div></div></div>';
+
+
+                    $this->redirectTo('Account_Login');
                 }
                 break;
-            case 'DoSignup':
-                //todo: test me
+            case 'Account_Signup':
+                if (isset($_SESSION['userId'])) {
+                    $this->redirectTo('Account_Profile', $_SESSION['userId']);
+                }
+                break;
+            case 'Account_DoSignup':
                 if (isset($_POST)) {
                     $id = $this->user->getIdByName('\'' . $_POST['Username'] . '\'');
-                    // Dog_12345
+
                     $_SESSION['SESSION_VARS']['TXT_SIGNUP_USERNAME'] = $_POST['Username'];
-                    if ($id === FALSE || $id === '') {
+                    if ($id !== FALSE && $id !== '' && $id <= 0) {
+                        //todo validate
                         $request                   = [];
                         $request['username']       = $_POST['Username'];
                         $request['password']       = $_POST['Password'];
                         $request['passwordRepeat'] = $_POST['PasswordRepeat'];
                         $_POST                     = [];
+
                         $this->user->createUser($request);
+
                         $id                 = $this->user->getIdByName('\'' . $request['username'] . '\'');
                         $hash               = $this->user->getHashById($id);
                         $_SESSION['userId'] = $id;
                         $_SESSION['hash']   = $hash;
-                        header('Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[5]);
+                        $this->redirectTo('Account_Profile', NULL, $id);
+
                     } else {
-                        header('Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[4]);
+                        $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                            $languageArray['TXT_IMAGELY_ACCOUNT_SIGNUP_EXISTS'] .
+                            '</div></div></div>';
+                        $this->redirectTo('Account_Signup');
+
                     }
                 } else {
-                    header('Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[3]);
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                        $languageArray['TEXT_IMAGELY_GENERAL_FILL_ALL'] .
+                        '</div></div></div>';
+
+                    $this->redirectTo('Account_Signup');
                 }
                 break;
 
-            case 'Create':
+            case 'Gallery_Create':
                 Imagely::checkSessionRedirect($defaultSite);
                 break;
-            case 'Detail':
-                //ToDo: after DoCreateImage
-                $galleryArr = $this->gallery->getGalleryById($requestedParameter);
-                $images     = $this->gallery->getImageByGalleryId($requestedParameter);
+            case 'Gallery_Detail':
+                $galleryArr = $this->gallery->getGalleryById((int)$requestedParameter);
+                $images     = $this->gallery->getImageByGalleryId((int)$requestedParameter);
 
                 if (isset($_SESSION['userId'])) {
                     $owner = $this->gallery->checkIfOwnerOrAdmin($_SESSION['userId'], $requestedParameter);
-
                     if (isset($owner) && $owner) {
-                        $addImageCode = '<a class="btn btn-block btn-default" href="/' . $requestedLanguage . '/Image/' . $requestedParameter . '"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;{TXT_IMAGELY_GALLERY_ADD_IMAGE}</a>';
-                        $page         = str_replace('{GALLERY_ADD_IMAGES}', $addImageCode, $page);
+                        $addImageCode = '<a class="btn btn-block btn-default" href="/' . $requestedLanguage . '/Image_Add/' . $requestedParameter . '"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;{TXT_IMAGELY_GALLERY_ADD_IMAGE}</a>';
+                    } else {
+                        $addImageCode = '';
                     }
-                }
+                } else
+                    $addImageCode = '';
+                $entry = '';
+
+                $page = str_replace('{GALLERY_ADD_IMAGES}', $addImageCode, $page);
                 if (empty($images)) {
                     $noImagesCode = '<div class="alert alert-info text-center"><p>{TXT_IMAGELY_GALLERY_NO_IMAGES}</p></div>';
                     $page         = str_replace('{GALLERY_NO_IMAGES}', $noImagesCode, $page);
+                } else {
+                    $page          = str_replace('{GALLERY_NO_IMAGES}', '', $page);
+                    $entryTemplate = file_get_contents(DOCUMENT_ROOT . '/template/Module/Image/Entry.html');
+                    foreach ($images as $image) {
+                        $temp = $entryTemplate;
+                        // $temp = str_replace()
+                        $temp = str_replace('{IMAGE_URL}', $image['imagePath'], $temp);
+                        $temp = str_replace('{IMAGE_THUMB_SMALL_URL}', $image['thumbnailPath1'], $temp);
+                        $temp = str_replace('{IMAGE_THUMB_MEDIUM_URL}', $image['thumbnailPath2'], $temp);
+                        $temp = str_replace('{IMAGE_THUMB_LARGE_URL}', $image['thumbnailPath3'], $temp);
+                        if (isset($_SESSION['userId']) && $this->gallery->checkIfOwnerOrAdmin($_SESSION['userId'], (int)$requestedParameter)) {
+                            $deleteLink = '<div class="caption"><h3><a class="delete" href=":link"><span class="glyphicon glyphicon-trash"></span></a></h3></div>
+';
+                            $deleteLink = str_replace(':link', $_SESSION['lang'] . '/Image_DoDelete/' . $image['id'] . '?galleryID=' . $requestedParameter, $deleteLink);
+                            $temp       = str_replace('{GALLERIES_DELETE_LINK}', $deleteLink, $temp);
+                        } else {
+                            $temp = str_replace('{GALLERIES_DELETE_LINK}', '', $temp);
+                        }
+                        $entry .= $temp;
+                    }
+
+                    $page = str_replace('{TXT_GALLERY_IMAGES}', $entry, $page);
                 }
 
                 $page = str_replace('{TXT_GALLERY_AUTHOR}', $this->user->getNameById($galleryArr['author']), $page);
@@ -274,7 +353,7 @@ class Imagely
                 $page = str_replace('{TXT_GALLERY_DESCRIPTION}', $galleryArr['description'], $page);
                 $page = str_replace('{GALLERY_TEASER_IMG}', $galleryArr['teaserImage'], $page);
 
-                $avg_lum = $this->gallery->get_avg_luminance($galleryArr['teaserImage']);
+                $avg_lum = $this->image->get_avg_luminance($galleryArr['teaserImage']);
                 if ($avg_lum > 170) {
                     $page = str_replace('{TXT_CLASS_TEXT_COLOUR}', 'dark', $page);
                     $page = str_replace('{TXT_CLASS_NAV_COLOUR}', 'navbar-inverse', $page);
@@ -282,7 +361,19 @@ class Imagely
 
 
                 break;
-            case 'DoCreateGallery':
+            case 'Image_DoDelete':
+                $galleryID = (isset($_GET['galleryID'])) ? $_GET['galleryID'] : NULL;
+                if (isset($_SESSION['userId']) && $this->gallery->checkIfOwnerOrAdmin($_SESSION['userId'], (int)$requestedParameter)) {
+                    $this->image->deleteImageById((int)$requestedParameter);
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                        $languageArray['TXT_IMAGELY_IMAGE_DELETE_SUCCESS'] .
+                        '</div></div></div>';
+
+                    $this->redirectTo('Home', NULL, (int)$galleryID);
+                } else {
+                }
+                break;
+            case 'Gallery_DoCreate':
                 Imagely::checkSessionRedirect($defaultSite);
                 if ((isset($_POST['name']) && $_POST['name'] != '') &&
                     (isset($_POST['description']) && $_POST['description'] != '' && count(strip_tags($_POST['description'])) <= 500) &&
@@ -306,73 +397,85 @@ class Imagely
                         $_SESSION['SESSION_VARS']['TXT_GALLERY_DESC_VALUE'] = $request['description'];
 
                         $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                            $languageArray['TXT_IMAGELY_CREATE_PICTURE'] .
+                            $languageArray['TXT_IMAGELY_GALLERY_CREATE_PICTURE'] .
                             '</div></div></div>';
                         $this->redirectTo('Create', $requestedLanguage);
                     }
                     $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-info">' .
-                        $languageArray['TXT_IMAGELY_CREATE_CREATED'] .
+                        $languageArray['TXT_IMAGELY_GALLERY_CREATE_CREATED'] .
                         '</div></div></div>';
                     $this->redirectTo('Home', $requestedLanguage);
                 } else if (count(strip_tags($_POST['description'])) > 500) {
                     $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                        $languageArray['TXT_IMAGELY_CREATE_DESCRIPTION_LENGTH'] .
+                        $languageArray['TXT_IMAGELY_GALLERY_CREATE_DESCRIPTION_LENGTH'] .
                         '</div></div></div>';
                 }
                 $_SESSION['SESSION_VARS']['TXT_INFO']               = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                    $languageArray['TXT_IMAGELY_CREATE_ALL_FIELDS'] .
+                    $languageArray['TEXT_IMAGELY_GENERAL_FILL_ALL'] .
                     '</div></div></div>';
                 $_SESSION['SESSION_VARS']['TXT_GALLERY_NAME_VALUE'] = $_POST['name'];
                 $_SESSION['SESSION_VARS']['TXT_GALLERY_DESC_VALUE'] = $_POST['description'];
                 $this->redirectTo('Create', $requestedLanguage);
 
                 break;
-            case 'DoCreateImage':
-                //todo: DoCreateImage
-                $request              = [];
-                $request['galleryId'] = $requestedParameter;
-                if (isset($_FILES)) {
-                    $file     = $_FILES['image']['name'];
-                    $fileExt  = pathinfo($file, PATHINFO_EXTENSION);
-                    $tempFile = $_FILES['image']['tmp_name'];
-
-
-                    $storeFolder   = '/data/media/gallery/';
-                    $existingFiles = scandir($storeFolder, 1);
-                    do {
-                        $randomString = uniqid();
-                    } while (in_array($randomString, $existingFiles, FALSE));
-
-                    $targetFile = DOCUMENT_ROOT . $storeFolder . $randomString . '.' . $fileExt;
-                    move_uploaded_file($tempFile, $targetFile);
-
-                    $request['imagePath']     = $storeFolder . $randomString . '.' . $fileExt;
-                    $request['thumbnailPath'] = $storeFolder . $randomString . '.' . $fileExt . '.thumbnail';
-                }
-                header('Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/' . $requestedLanguage . '/' . $availableTemplates[15] . '/' . $requestedParameter);
+            case 'Image_Add':
+                $page = str_ireplace('{IMAGE_GALLERYID}', $requestedParameter, $page);
                 break;
-            case 'DoDeleteAccount':
+            case 'Image_DoAdd':
+                if (isset($_FILES['image']['tmp_name'])) {
+                    try {
+                        if ($this->image->addImagesToGallery($_FILES['image']['tmp_name'], (int)$requestedParameter)) {
+                            $this->redirectTo('Gallery_Detail', NULL, (int)$requestedParameter);
+                        } else {
+                            $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                                $languageArray['TXT_IMAGELY_IMAGE_ADD_NO_GALLERY_OR_NOT_OWNER'] .
+                                '</div></div></div>';
+                            $this->redirectTo('Image_Add', NULL, (int)$requestedParameter);
+                        }
+                    } catch
+                    (Exception $e) {
+                        $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                            $e->getMessage() .
+                            '</div></div></div>';
+                        $this->redirectTo('Image_Add', NULL, (int)$requestedParameter);
+
+                    }
+                } else {
+                    $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
+                        $languageArray['TXT_IMAGELY_IMAGE_ADD_ALL_FIELDS'] .
+                        '</div></div></div>';
+                    $this->redirectTo('Image_Add', NULL, (int)$requestedParameter);
+                }
+
+                break;
+            case 'Account_DoDelete':
                 //todo: DoDeleteAccount
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->user->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
-                $this->user->deleteUserById($requestedParameter);
-                header('Location: ' . $_SERVER['HTTP_REFERER']);
+                $this->user->deleteUserById((int)$requestedParameter);
+                unset($_SESSION['userId']);
+                unset($_SESSION['hash']);
+                $this->redirectTo('Home');
                 break;
-            case 'DoEditAccount':
-                //todo: DoEditAccount
+            case 'Account_DoEdit':
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->user->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
-                $this->user->deleteUserById($requestedParameter);
-                header('Location: ' . $_SERVER['HTTP_REFERER']);
+                //todo validate
+                $email    = (isset($_POST['email'])) ? $_POST['email'] : NULL;
+                $password = (isset($_POST['password'])) ? $_POST['password'] : NULL;
+
+                $this->user->editUserByID((int)$requestedParameter, $email, $password);
+                //todo: change all these redirects to the ones from the database
+                $this->redirectTo('Account_Profile', NULL, (int)$requestedParameter);
                 break;
-            case 'DoDeleteGallery':
+            case 'Gallery_DoDelete':
                 //todo: DoDeleteGallery
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
                 $this->gallery->deleteGalleryById($requestedParameter);
                 header('Location: ' . $_SERVER['HTTP_REFERER']);
                 break;
-            case 'DoEditGallery':
+            case 'Gallery_DoEdit':
                 Imagely::checkSessionRedirect($defaultSite);
                 $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
 
@@ -394,46 +497,46 @@ class Imagely
                         $this->gallery->editGallery($request);
                     } catch (Exception $e) {
                         $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                            $languageArray['TXT_IMAGELY_CREATE_PICTURE'] .
+                            $languageArray['TXT_IMAGELY_GALLERY_CREATE_PICTURE'] .
                             '</div></div></div>';
                         $this->redirectTo('Edit', $requestedLanguage, $requestedParameter);
                     }
                     $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-info">' .
-                        $languageArray['TXT_IMAGELY_CREATE_CREATED'] .
+                        $languageArray['TXT_IMAGELY_GALLERY_CREATE_CREATED'] .
                         '</div></div></div>';
                     $this->redirectTo('Galleries');
                 } else if (count(strip_tags($_POST['description'])) > 500) {
                     $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                        $languageArray['TXT_IMAGELY_CREATE_DESCRIPTION_LENGTH'] .
+                        $languageArray['TXT_IMAGELY_GALLERY_CREATE_DESCRIPTION_LENGTH'] .
                         '</div></div></div>';
                 }
                 $_SESSION['SESSION_VARS']['TXT_INFO'] = '<div class="row"><div class="col-xs-12"><div class="alert alert-warning">' .
-                    $languageArray['TXT_IMAGELY_CREATE_ALL_FIELDS'] .
+                    $languageArray['TEXT_IMAGELY_GENERAL_FILL_ALL'] .
                     '</div></div></div>';
                 $this->redirectTo('Edit', $requestedLanguage, $requestedParameter);
                 break;
-            case 'Edit':
+            case 'Gallery_Edit':
                 //todo: edit
                 Imagely::checkSessionRedirect($defaultSite);
-                $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], $requestedParameter, $defaultSite);
+                $this->gallery->checkIfOwnAccountOrRedirect($_SESSION['userId'], (int)$requestedParameter, $defaultSite);
                 $entry = $this->gallery->getGalleryById($requestedParameter);
                 $page  = str_replace('{TXT_EDIT_ID}', $entry['id'], $page);
                 $page  = str_replace('{TXT_EDIT_NAME}', $entry['name'], $page);
                 $page  = str_replace('{TXT_EDIT_DESCRIPTION}', $entry['description'], $page);
                 break;
-            case 'Logout':
+            case 'Account_Logout':
                 session_destroy();
                 header($defaultSite);
                 break;
-            case 'Galleries':
+            case 'Account_Galleries':
                 Imagely::checkSessionRedirect($defaultSite);
                 $content   = NULL;
-                $galleries = $this->gallery->getAllByAuthor($_SESSION['userId']);
+                $galleries = $this->gallery->getAllGalleriesByUserID($_SESSION['userId']);
                 foreach ($galleries as $key => $item) {
-                    $entry   = file_get_contents(DOCUMENT_ROOT . '/template/gallery_entry.html');
-                    $entry   = str_replace('{GALLERIES_EDIT_HREF}', '/' . $requestedLanguage . '/Edit/' . $item['id'], $entry);
-                    $entry   = str_replace('{GALLERIES_LINK_HREF}', '/' . $requestedLanguage . '/Detail/' . $item['id'], $entry);
-                    $entry   = str_replace('{GALLERIES_DELETE_HREF}', '/' . $requestedLanguage . '//DoDeleteGallery/' . $item['id'], $entry);
+                    $entry   = file_get_contents(DOCUMENT_ROOT . '/template/Module/Gallery/Entry.html');
+                    $entry   = str_replace('{GALLERIES_EDIT_HREF}', '/' . $requestedLanguage . '/Gallery_Edit/' . $item['id'], $entry);
+                    $entry   = str_replace('{GALLERIES_LINK_HREF}', '/' . $requestedLanguage . '/Gallery_Detail/' . $item['id'], $entry);
+                    $entry   = str_replace('{GALLERIES_DELETE_HREF}', '/' . $requestedLanguage . '/Gallery_DoDelete/' . $item['id'], $entry);
                     $entry   = str_replace('{TXT_GALLERIES_NAME}', $item['name'], $entry);
                     $entry   = str_replace('{TXT_GALLERIES_DESCRIPTION}', $item['description'], $entry);
                     $entry   = str_replace('{TXT_GALLERIES_MODIFIED}', $item['modifiedDate'], $entry);
@@ -453,7 +556,6 @@ class Imagely
             $page = str_replace('{' . $key . '}', $item, $page);
             unset($_SESSION['SESSION_VARS'][ $key ]);
         }
-
         foreach ($languageArray as $key => $item) {
             $page = str_replace('{' . $key . '}', $item, $page);
         }
@@ -491,7 +593,8 @@ class Imagely
      *
      * @return bool - Returns true if logged in
      */
-    public function checkAdminRedirect(string $redirect)
+    public
+    function checkAdminRedirect(string $redirect)
     {
         if (isset($_SESSION['userId'])) {
             if ($this->user->isAdmin($_SESSION['userId']) === TRUE) {
@@ -510,13 +613,14 @@ class Imagely
      * @param string|null $lang               - Language as string
      * @param string|int  $requestedParameter - Additional Parameter
      */
-    public function redirectTo(string $site, string $lang = NULL, int $requestedParameter = NULL)
+    public
+    function redirectTo(string $site, string $lang = NULL, int $requestedParameter = NULL)
     {
-        $availableTemplates = $this->template->getAvailableSites();
+        $availableTemplates = $this->template->pagesArr;
         $availableLanguages = $this->language->getAvailableLanguages();
-        $requestedParameter = trim(($requestedParameter != NULL) ? $requestedParameter : '');
-        $site               = trim(($site != NULL && in_array($site, $availableTemplates, TRUE)) ? $site : 'home');
-        $lang               = trim(($lang != NULL && in_array($lang, $availableLanguages, TRUE)) ? $lang : $GLOBALS['CONFIG']['LANG']);
+        $requestedParameter = trim(($requestedParameter !== NULL) ? $requestedParameter : '');
+        $site               = trim(($site != NULL && in_array($site, $availableTemplates, TRUE)) ? $site : 'Home');
+        $lang               = trim(($lang != NULL && in_array($lang, $availableLanguages, TRUE)) ? $lang : $_SESSION['lang']);
 
         $location = 'Location: ' . PROTOCOL . '://' . $_SERVER['HTTP_HOST'] . PATH_OFFSET . '/:lang/:site/:requestParameter';
         $needle   = [

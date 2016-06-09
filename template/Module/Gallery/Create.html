@@ -1,0 +1,64 @@
+<!-- Page Header -->
+<header class="intro-header" style="background-image: url('{PATH_OFFSET}/data/media/content/gallery-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="site-heading">
+                    <h1>{TXT_IMAGELY_GALLERY_CREATE_HEADING}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Imports for create -->
+<link href="{PATH_OFFSET}/lib/node_modules/trix/dist/trix.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{PATH_OFFSET}/lib/node_modules/trix/dist/trix.min.js"></script>
+<!-- Main Content -->
+<div class="container">
+    {TXT_INFO}
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <form action="{PATH_OFFSET}/{LANGUAGE}/Gallery_DoCreate" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="inputTitle" class="control-label">
+                        {TXT_IMAGELY_GALLERY_CREATE_NAME}
+                    </label>
+
+
+                    <input type="text" class="form-control" id="inputTitle" name="name"
+                           placeholder="{TXT_IMAGELY_GALLERY_CREATE_NAME}" value="{TXT_GALLERY_NAME_VALUE}">
+
+                </div>
+                <div class="form-group">
+                    <label for="inputContent" class="control-label">
+                        {TXT_IMAGELY_GALLERY_CREATE_DESCRIPTION}
+                    </label>
+                    <span class="help-block">
+                        <span class="remaining">500</span> characters remaining.
+                    </span>
+
+                    <input type="hidden" id="inputContent" name="description" value="{TXT_GALLERY_DESC_VALUE}">
+                    <trix-editor data-maxlength="500" class="form-control" input="inputContent"
+                                 placeholder="{TXT_IMAGELY_GALLERY_CREATE_DESCRIPTION}">
+                        {TXT_GALLERY_DESC_VALUE}
+                    </trix-editor>
+
+
+                </div>
+                <div class="form-group">
+                    <label for="inputImage" class="control-label">
+                        {TXT_IMAGELY_GALLERY_CREATE_IMAGE}
+                    </label>
+                    <span class="help-block">Use a Image around HD quality</span>
+
+                    <input class="form-control" id="inputImage" name="image" type="file">
+
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">{TXT_IMAGELY_GALLERY_CREATE_CREATE}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<hr>

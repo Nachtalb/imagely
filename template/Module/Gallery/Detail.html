@@ -1,0 +1,33 @@
+<!-- Page Header -->
+<header class="intro-header" style="background-image: url('{PATH_OFFSET}{GALLERY_TEASER_IMG}')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="gallery-heading">
+                    <h1>{TXT_GALLERY_NAME}</h1>
+                    <hr class="small">
+                    <span class="subheading">{TXT_GALLERY_DESCRIPTION}</span>
+                    <span class="meta">{TXT_IMAGELY_GALLERY_GALLERY_POSTEDBY} {TXT_GALLERY_AUTHOR}, {TXT_GALLERY_DATE}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Gallery Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                {GALLERY_NO_IMAGES}
+                <div id="image-gallery" class="row">
+                    {TXT_GALLERY_IMAGES}
+                </div>
+                {GALLERY_ADD_IMAGES}
+                <div class="deleteText hide">
+                    {TXT_IMAGELY_GALLERY_YOU_SURE}
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<hr>

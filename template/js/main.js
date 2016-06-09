@@ -1,4 +1,6 @@
 $(function () {
+    $('img').lazyload();
+
     $(document).on('load keydown', '[contenteditable]', function () {
         var maximumLength = $(this).attr("data-maxlength");
         remain = maximumLength - parseInt($(this).text().length);
@@ -6,7 +8,21 @@ $(function () {
     });
 
     $(document).on('click', 'a.delete', function (e) {
-        if (!confirm($(this).next('.deleteText').text()))
+        if (!confirm($('.deleteText').text()))
             e.preventDefault();
-    })
+    });
+
+    $('#image-gallery').magnificPopup({
+        delegate: 'a.gallery-image-link',
+        type: 'image',
+        closeOnContentClick: false,
+        closeBtnInside: false,
+        image: {
+            verticalFit: true
+        },
+        gallery: {
+            enabled: true
+        }
+    });
+
 });
